@@ -1,4 +1,8 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
 
 <dom-module id="oc-organisation-picker">
   <template>
@@ -6,16 +10,48 @@
       :host {
         display: block;
       }
+      paper-item:hover {
+        background: steelblue;
+      }
     </style>
-    <h2>Hello [[prop1]]</h2>
+
+    <paper-dropdown-menu id="dropdown" no-label-float verticalAlign="top" horizontalAlign="left" disabled>
+      <paper-listbox class="dropdown-content" on-iron-select="_listItemSelected">
+        <template is="dom-repeat" items="[[organisations]]" as="organisation">
+          <paper-item organisation="[[organisation]]">[[organisation.name]]</paper-item>
+        </template>
+      </paper-listbox>
+    </paper-dropdown-menu>
+
+    <iron-ajax
+            auto
+            url="[[_getUrl(permission)]]"
+            headers='{"Authorization": "Basic cnVkb2xmQG9yZGVyY2xvdWQuY28uemE6cGFzc3dvcmQ=", "X-Ordercloud-Organisation": "e4e3b3785d48e41a71cb4c348ec85cc5"}'
+            handle-as="json"
+            on-response="_handleResponse">
+    </iron-ajax>
   </template>
 
   <script>
     Polymer({
       is: 'oc-organisation-picker',
+
       properties: {
+        permission: String
       },
 
+      _getUrl: function (permission) {
+        return 'https://test-api.ordercloud.com/resource/authorization/user/permission/' + permission + '/organisations';
+      },
+
+      _handleResponse: function(event) {
+        this.organisations = event.detail.response.results;
+        this.$.dropdown.disabled = false;
+      },
+
+      _listItemSelected: function(event) {
+        this.fire('oc-organisation-selected', event.item.organisation);
+      }
     });
   </script>
 </dom-module>
