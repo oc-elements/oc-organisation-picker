@@ -8,7 +8,9 @@
     "paper-listbox": "polymerelements/paper-listbox#^1.1.2",
     "paper-item": "PolymerElements/paper-item#^1.2.1",
     "iron-ajax": "PolymerElements/iron-ajax#^1.2.0",
-    "iron-localstorage": "PolymerElements/iron-localstorage#^1.0.5"
+    "iron-localstorage": "PolymerElements/iron-localstorage#^1.0.5",
+    "oc-core-utils": "^0.1.0",
+    "oc-authorization-api": "^0.1.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",

@@ -16,16 +16,28 @@
   </head>
   <body>
 
+  <script>OC.token = '';</script>
+
     <div class="vertical-section-container centered">
       <h3>Basic oc-organisation-picker Demo</h3>
       <demo-snippet>
         <template>
           <oc-organisation-picker
-                  selected-organisation="{{selectedOrganisation}}"
-                  permission="bWFuYWdlbWVudF9jb25zb2xlOnZpZXc6b3JnYW5pc2F0aW9u"
+              selected-organisation="{{selectedOrganisation}}"
+              permission="bWFuYWdlbWVudF9jb25zb2xlOnZpZXc6b3JnYW5pc2F0aW9u"
           ></oc-organisation-picker>
+
+          <script>
+          (function() {
+            document.querySelector('oc-organisation-picker')
+              .addEventListener('oc-organisation-selected', function(event) {
+                console.log('Organisation selected', event.detail);
+              });
+          })();
+          </script>
         </template>
       </demo-snippet>
+
     </div>
 
   </body>

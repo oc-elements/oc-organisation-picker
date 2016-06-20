@@ -1,10 +1,15 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-localstorage/iron-localstorage.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../iron-ajax/iron-ajax.html">
-<link rel="import" href="../iron-localstorage/iron-localstorage.html">
 
+<link rel="import" href="../oc-core-utils/oc-api-consumer-behaviour.html">
+<link rel="import" href="../oc-authorization-api/oc-authorization-api.html">
+
+<!--
+@demo
+-->
 <dom-module id="oc-organisation-picker">
   <template>
     <style>
@@ -13,47 +18,58 @@
       }
       paper-item:hover {
         background: steelblue;
+        color: white;
+      }
+      paper-icon-button {
+        min-width: 40px;
       }
     </style>
 
-    <paper-dropdown-menu id="dropdown" no-label-float verticalAlign="top" horizontalAlign="left" disabled>
-      <paper-listbox id="list" class="dropdown-content" selected="[[ _getDefaultOrganisationIndex(organisations, defaultOrganisation) ]]">
+    <paper-dropdown-menu id="dropdown" no-label-float vertical-align="top" horizontal-align="left" disabled$="[[ !organisations ]]">
+      <paper-listbox class="dropdown-content" selected="[[ _getDefaultOrganisationIndex(organisations, defaultOrganisationId) ]]">
         <template is="dom-repeat" items="[[ organisations ]]" as="organisation">
           <paper-item organisation="[[ organisation ]]">
-            <paper-icon-button icon="[[ _calculateIcon(organisation, defaultOrganisation) ]]" on-tap="_onSetAsDefault">
-            </paper-icon-button>
-            <span on-tap="_selectOragnisation">[[organisation.name]]</span>
+            <paper-icon-button icon="[[ _calculateIcon(organisation, defaultOrganisationId) ]]" on-tap="_selectDefault"></paper-icon-button>
+            <span on-tap="_selectOragnisation">[[ organisation.name ]]</span>
           </paper-item>
         </template>
       </paper-listbox>
     </paper-dropdown-menu>
 
-    <iron-ajax
-            auto
-            url="[[_getUrl(permission)]]"
-            headers='{"Authorization": "Basic cnVkb2xmQG9yZGVyY2xvdWQuY28uemE6cGFzc3dvcmQ=", "X-Ordercloud-Organisation": "e4e3b3785d48e41a71cb4c348ec85cc5"}'
-            handle-as="json"
-            on-response="_handleResponse">
-    </iron-ajax>
-
-    <iron-localstorage id="storage"
+    <iron-localstorage id="storage" use-raw
         name="oc-organisation-picker-default"
-        value="{{defaultOrganisation}}"
-        use-raw
+        value="{{ defaultOrganisationId }}"
     ></iron-localstorage>
+
+    <oc-authorization-api id="authApi"></oc-authorization-api>
+
   </template>
 
   <script>
-
     Polymer({
-
       is: 'oc-organisation-picker',
+      behaviors: [OC.Behaviours.ApiConsumer],
 
       properties: {
-        permission: String,
+        /**
+         * The permissions used to determine the list of organisations.
+         */
+        permission: {
+          type: String,
+          observer: '_fetchOrganisations'
+        },
+        /**
+         * The selected organisation
+         */
         selectedOrganisation: {
-          type: Object,
+          type: Number,
           notify: true
+        },
+        /**
+         * The default organisation ID
+         */
+        defaultOrganisationId: {
+          type: Number
         }
       },
 
@@ -61,39 +77,35 @@
         this.$.dropdown.$.menuButton.ignoreSelect = true;
       },
 
-      _getUrl: function (permission) {
-        return 'https://test-api.ordercloud.com/resource/authorization/user/permission/' + permission + '/organisations';
+      _fetchOrganisations: function(a, b) {
+        this.$.authApi.getOrganisations(a)
+            .then(this._setPropertyResponseResults.bind(this, 'organisations'))
+            .catch(console.error);
       },
 
-      _handleResponse: function(event) {
-        this.organisations =
-                event.detail.response.results
-                        .sort(function(a,b) {return (a.name > b.name) ? 1 : ((a.name < b.name) ? -1 : 0);} );
-        this.$.dropdown.disabled = false;
+      _selectDefault: function(event) {
+        this.defaultOrganisationId = event.model.organisation.id;
       },
 
-      _onSetAsDefault: function(event) {
-        this.defaultOrganisation = event.model.organisation.id;
-      },
-
-      _calculateIcon: function(organisation, defaultOrganisation) {
-        return organisation.id == defaultOrganisation ? "star" : "star-border";
+      _calculateIcon: function(organisation, defaultOrganisationId) {
+        return organisation.id == defaultOrganisationId ? "star" : "star-border";
       },
 
       _selectOragnisation: function(event) {
         this.$.dropdown.close();
-        this.fire('oc-organisation-selected', event.model.organisation);
         this.selectedOrganisation = event.model.organisation;
+        this.fire('oc-organisation-selected', event.model.organisation);
       },
 
-      _getDefaultOrganisationIndex(organisations, defaultOrganisation) {
+      _getDefaultOrganisationIndex(organisations, defaultOrganisationId) {
         for(var i = 0; i < organisations.length; i++) {
-          if (organisations[i].id == defaultOrganisation) {
+          if (organisations[i].id == defaultOrganisationId) {
             return i;
           }
         }
         return 0;
       }
+
     });
   </script>
 </dom-module>
