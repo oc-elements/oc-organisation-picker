@@ -2,7 +2,7 @@
 <link rel="import" href="../iron-localstorage/iron-localstorage.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
-<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-item/paper-icon-item.html">
 
 <link rel="import" href="../oc-core-utils/oc-api-consumer-behaviour.html">
 <link rel="import" href="../oc-authorization-api/oc-authorization-api.html">
@@ -16,29 +16,46 @@
       :host {
         display: block;
       }
-      paper-item:hover {
-        background: steelblue;
-        color: white;
+      paper-dropdown-menu {
+        width: 100%;
       }
-      paper-icon-button {
-        min-width: 40px;
+      paper-icon-item.iron-selected,
+      paper-icon-item:hover {
+        background: var(--primary-color);
+        color: white;
       }
     </style>
 
-    <paper-dropdown-menu id="dropdown" no-label-float vertical-align="top" horizontal-align="left" disabled$="[[ !organisations ]]">
-      <paper-listbox class="dropdown-content" selected="[[ _getDefaultOrganisationIndex(organisations, defaultOrganisationId) ]]">
+    <paper-dropdown-menu
+        id="dropdown"
+        no-label-float
+        vertical-align="top"
+        horizontal-align="left"
+        disabled$="[[ !organisations ]]"
+        invalid$="[[ errorMessage ]]"
+        error-message="[[ errorMessage ]]"
+    >
+      <paper-listbox id="list" class="dropdown-content" on-iron-select="_setSelectedOrganisation">
         <template is="dom-repeat" items="[[ organisations ]]" as="organisation">
-          <paper-item organisation="[[ organisation ]]">
-            <paper-icon-button icon="[[ _calculateIcon(organisation, defaultOrganisationId) ]]" on-tap="_selectDefault"></paper-icon-button>
-            <span on-tap="_selectOragnisation">[[ organisation.name ]]</span>
-          </paper-item>
+          <paper-icon-item organisation="[[ organisation ]]">
+            <paper-icon-button
+                item-icon
+                icon="[[ _calculateIcon(organisation, defaultOrganisationId) ]]"
+                on-tap="_selectDefault"
+            ></paper-icon-button>
+            <span>[[ organisation.name ]] [[ organisation.name ]]</span>
+          </paper-icon-item>
         </template>
+      </iron-selector>
       </paper-listbox>
     </paper-dropdown-menu>
 
-    <iron-localstorage id="storage" use-raw
+    <iron-localstorage
+        use-raw
         name="oc-organisation-picker-default"
-        value="{{ defaultOrganisationId }}"
+        value="{{ defaultOrganisation }}"
+        on-iron-localstorage-load="_loadDefaultOrganisation"
+        on-iron-localstorage-load-empty="_loadDefaultOrganisation"
     ></iron-localstorage>
 
     <oc-authorization-api id="authApi"></oc-authorization-api>
@@ -54,10 +71,7 @@
         /**
          * The permissions used to determine the list of organisations.
          */
-        permission: {
-          type: String,
-          observer: '_fetchOrganisations'
-        },
+        permission: String,
         /**
          * The selected organisation
          */
@@ -68,42 +82,66 @@
         /**
          * The default organisation ID
          */
-        defaultOrganisationId: {
-          type: Number
+        defaultOrganisationId: Number,
+        /**
+         * The list of organisations the user can choose from
+         */
+        organisations: {
+          type: Array,
+          notify: true
         }
       },
 
-      ready: function() {
-        this.$.dropdown.$.menuButton.ignoreSelect = true;
-      },
+      observers: [
+        'loadOrganisations(permission)',
+        '_initSelectedOrganisation(organisations.*)'
+      ],
 
-      _fetchOrganisations: function(a, b) {
-        this.$.authApi.getOrganisations(a)
+      /**
+       * Load the organisations where the current user has the given permission.
+       * @param permission
+       */
+      loadOrganisations: function(permission) {
+        this.errorMessage = null;
+        this.$.authApi.getOrganisations(permission)
             .then(this._setPropertyResponseResults.bind(this, 'organisations'))
-            .catch(console.error);
+            .catch(function() {
+              this.errorMessage = 'Failed to load organisations';
+            }.bind(this));
       },
 
-      _selectDefault: function(event) {
-        this.defaultOrganisationId = event.model.organisation.id;
+      _loadDefaultOrganisation: function() {
+        this.defaultOrganisationId = this.defaultOrganisation ? Number(this.defaultOrganisation) : null;
+      },
+
+      _initSelectedOrganisation: function(organisations) {
+        if (organisations.base.length === 0) {
+          this.errorMessage = 'No organisations';
+          return;
+        }
+
+        var selectedIndex = organisations.base.findIndex(function(organisation) {
+          return organisation.id === this.defaultOrganisationId;
+        }, this);
+        this.$.list.selectIndex(selectedIndex > 0 ? selectedIndex : 0);
       },
 
       _calculateIcon: function(organisation, defaultOrganisationId) {
         return organisation.id == defaultOrganisationId ? "star" : "star-border";
       },
 
-      _selectOragnisation: function(event) {
-        this.$.dropdown.close();
-        this.selectedOrganisation = event.model.organisation;
-        this.fire('oc-organisation-selected', event.model.organisation);
+      _selectDefault: function(event) {
+        if (this.defaultOrganisationId === event.model.organisation.id) {
+          this.defaultOrganisationId = this.defaultOrganisation = null;
+        }
+        else {
+          this.defaultOrganisationId = this.defaultOrganisation = event.model.organisation.id;
+        }
+        event.stopPropagation();
       },
 
-      _getDefaultOrganisationIndex(organisations, defaultOrganisationId) {
-        for(var i = 0; i < organisations.length; i++) {
-          if (organisations[i].id == defaultOrganisationId) {
-            return i;
-          }
-        }
-        return 0;
+      _setSelectedOrganisation: function(event, detail) {
+        this.selectedOrganisation = detail.item.organisation;
       }
 
     });
