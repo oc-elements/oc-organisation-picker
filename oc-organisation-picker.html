@@ -6,6 +6,7 @@
 
 <link rel="import" href="../oc-core-utils/oc-api-consumer-behaviour.html">
 <link rel="import" href="../oc-authorization-api/oc-authorization-api.html">
+<link rel="import" href="../oc-organisation-api/oc-organisation-api.html">
 
 <!--
 @demo
@@ -59,6 +60,7 @@
     ></iron-localstorage>
 
     <oc-authorization-api id="authApi"></oc-authorization-api>
+    <oc-organisation-api id="organisationApi"></oc-organisation-api>
 
   </template>
 
@@ -89,20 +91,35 @@
         organisations: {
           type: Array,
           notify: true
+        },
+        /**
+         * The selected organisation's client ID
+         */
+        clientId: {
+          type: String,
+          readOnly: true,
+          notify: true
         }
       },
 
       observers: [
-        'loadOrganisations(permission)',
-        '_initSelectedOrganisation(organisations.*)'
+        '_loadOrganisations(permission)',
+        '_initSelectedOrganisation(organisations.*)',
+        '_fetchClientId(selectedOrganisation)'
       ],
 
       /**
        * Load the organisations where the current user has the given permission.
-       * @param permission
+       * @param {String} permission
        */
-      loadOrganisations: function(permission) {
+      _loadOrganisations: function(permission) {
         this.errorMessage = null;
+
+        if (!permission) {
+          this.organisations = null;
+          return;
+        }
+
         this.$.authApi.getOrganisations(permission)
             .then(this._setPropertyResponseResults.bind(this, 'organisations'))
             .catch(function() {
@@ -142,6 +159,22 @@
 
       _setSelectedOrganisation: function(event, detail) {
         this.selectedOrganisation = detail.item.organisation;
+      },
+
+      _fetchClientId: function(selectedOrganisation) {
+        if (!selectedOrganisation) {
+          this.clientId = null;
+          return;
+        }
+
+        this.$.organisationApi.getOrganisationAccessToken(selectedOrganisation.id)
+            .then(function(request) {
+              this.clientId = request.response.token;
+            }.bind(this))
+            .catch(function() {
+              this.clientId = null;
+              this.errorMessage = 'Failed to load organisations';
+            }.bind(this));
       }
 
     });
