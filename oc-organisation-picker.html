@@ -132,7 +132,7 @@
       },
 
       _initSelectedOrganisation: function(organisations) {
-        if (organisations.base.length === 0) {
+        if (!organisations.base || organisations.base.length === 0) {
           this.errorMessage = 'No organisations';
           return;
         }
