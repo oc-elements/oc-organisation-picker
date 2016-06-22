@@ -103,7 +103,7 @@
       },
 
       observers: [
-        'loadOrganisations(permission)',
+        '_loadOrganisations(permission)',
         '_initSelectedOrganisation(organisations.*)',
         '_fetchClientId(selectedOrganisation)'
       ],
@@ -112,7 +112,7 @@
        * Load the organisations where the current user has the given permission.
        * @param {String} permission
        */
-      loadOrganisations: function(permission) {
+      _loadOrganisations: function(permission) {
         this.errorMessage = null;
 
         if (!permission) {
