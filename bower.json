@@ -9,9 +9,9 @@
     "paper-item": "PolymerElements/paper-item#^1.2.1",
     "iron-ajax": "PolymerElements/iron-ajax#^1.2.0",
     "iron-localstorage": "PolymerElements/iron-localstorage#^1.0.5",
-    "oc-core-utils": "^0.1.0",
-    "oc-authorization-api": "^0.1.0",
-    "oc-organisation-api": "^0.5.0"
+    "oc-core-utils": "git://github.com/oc-elements/oc-core-utils#1.x",
+    "oc-authorization-api": "git://github.com/oc-elements/oc-authorization-api#1.x",
+    "oc-organisation-api": "git://github.com/oc-elements/oc-organisation-api#1.x"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
