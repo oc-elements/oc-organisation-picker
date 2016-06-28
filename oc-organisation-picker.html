@@ -103,8 +103,7 @@
 
       observers: [
         '_loadOrganisations(permission)',
-        '_initSelectedOrganisation(organisations.*)',
-        '_fetchClientId(selectedOrganisation)'
+        '_initSelectedOrganisation(organisations.*)'
       ],
 
       /**
@@ -170,22 +169,14 @@
       },
 
       _setSelectedOrganisation: function(event, detail) {
-        this.selectedOrganisation = detail.item.organisation;
-      },
-
-      _fetchClientId: function(selectedOrganisation) {
-        if (!selectedOrganisation) {
-          this.clientId = null;
-          return;
-        }
-
         this.$.organisationApi.getOrganisationAccessToken(selectedOrganisation.id)
             .then(function(request) {
               this.clientId = request.response.token;
+              this.selectedOrganisation = detail.item.organisation;
             }.bind(this))
             .catch(function() {
               this.clientId = null;
-              this.errorMessage = 'Failed to load organisations';
+              this.errorMessage = 'Failed to load organisation client ID';
             }.bind(this));
       }
 
