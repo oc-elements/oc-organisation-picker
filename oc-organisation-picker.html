@@ -169,7 +169,7 @@
       },
 
       _setSelectedOrganisation: function(event, detail) {
-        this.$.organisationApi.getOrganisationAccessToken(selectedOrganisation.id)
+        this.$.organisationApi.getOrganisationAccessToken(detail.item.organisation.id)
             .then(function(request) {
               this.clientId = request.response.token;
               this.selectedOrganisation = detail.item.organisation;
