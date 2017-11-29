@@ -6,6 +6,7 @@
     "polymer": "Polymer/polymer#^2.0.0",
     "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^2.0.0",
     "paper-listbox": "polymerelements/paper-listbox#^2.0.0",
+    "neon-animation": "PolymerElements/neon-animation#^2.0.1",
     "paper-item": "PolymerElements/paper-item#^2.0.0",
     "iron-localstorage": "PolymerElements/iron-localstorage#^2.0.0",
     "oc-core-utils": "git://github.com/oc-elements/oc-core-utils#2.x",

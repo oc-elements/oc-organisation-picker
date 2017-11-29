@@ -3,6 +3,8 @@
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-item/paper-icon-item.html">
+<!-- Ensure Web Animations polyfill is loaded since neon-animation 2.0 doesn't import it -->
+<link rel="import" href="../neon-animation/web-animations.html">
 
 <link rel="import" href="../oc-authorization-api/oc-authorization-api.html">
 <link rel="import" href="../oc-organisation-api/oc-organisation-api.html">
@@ -110,6 +112,10 @@
             ]
         }
 
+        ready() {
+            super.ready();
+        }
+
         /**
         * Load the organisations where the current user has the given permission.
         * @param {String} permission
@@ -159,7 +165,7 @@
         }
 
         _calculateIcon(organisation, defaultOrganisationId) {
-            return organisation.id == defaultOrganisationId ? "star" : "star-border";
+            return organisation.id === defaultOrganisationId ? "star" : "star-border";
         }
 
         _selectDefault(event) {
