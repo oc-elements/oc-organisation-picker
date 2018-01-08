@@ -70,7 +70,7 @@
      * @polymer
      * @demo demo/index.html
      */
-    class OcOrganisationPicker extends Polymer.Element {
+    class OcOrganisationPicker extends Ordercloud.ReduxMixin(Polymer.Element) {
         static get is() { return 'oc-organisation-picker'; }
         static get properties() {
             return {
@@ -83,7 +83,8 @@
                  */
                 selectedOrganisation: {
                     type: Number,
-                    notify: true
+                    notify: true,
+                    statePath: 'organisation.id'
                 },
                 /**
                  * The default organisation ID
@@ -101,7 +102,8 @@
                  */
                 clientId: {
                     type: String,
-                    notify: true
+                    notify: true,
+                    statePath: 'organisation.clientId'
                 }
             };
         }
@@ -181,11 +183,16 @@
         _setSelectedOrganisation(event, detail) {
             this.$.organisationApi.getOrganisationAccessToken(detail.item.organisation.id)
                 .then(function(request) {
-                    this.clientId = request.response.token;
+
+                    var payload = {};
+                    payload.id = detail.item.organisation.id;
+                    payload.profile = detail.item.organisation;
+                    this.dispatch('receiveOrganisation', payload);
+                    this.dispatch('receiveClientId', request.response.toke);
                     this.selectedOrganisation = detail.item.organisation;
                 }.bind(this))
                 .catch(function() {
-                    this.clientId = null;
+                    this.dispatch('clearOrganisation');
                     this.errorMessage = 'Failed to load organisation client ID';
                 }.bind(this));
         }
