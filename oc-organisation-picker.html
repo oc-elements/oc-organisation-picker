@@ -109,13 +109,14 @@
         }
 
         static get observers() {
-            return ['_loadOrganisations(permission)',
+            return [
             '_initSelectedOrganisation(organisations.*)'
             ]
         }
 
         ready() {
             super.ready();
+            this._loadOrganisations(this.permission);
         }
 
         /**
@@ -123,7 +124,6 @@
         * @param {String} permission
         */
         _loadOrganisations(permission) {
-            this.errorMessage = null;
 
             if (!permission) {
                 this.organisations = null;
