@@ -11,12 +11,16 @@
 
 <dom-module id="oc-organisation-picker">
   <template>
+      <style is="custom-style" include="paper-item-shared-styles"></style>
       <style>
           :host {
               display: block;
           }
           paper-dropdown-menu {
               width: 100%;
+          }
+          paper-icon-item  {
+              display: block;
           }
           paper-icon-item.iron-selected,
           paper-icon-item:hover {
@@ -27,22 +31,25 @@
       <paper-dropdown-menu
               id="dropdown"
               no-label-float
-              vertical-align="top"
-              horizontal-align="right"
               disabled$="[[ !organisations ]]"
               invalid$="[[ errorMessage ]]"
               error-message="[[ errorMessage ]]">
 
-          <paper-listbox id="list" class="dropdown-content" on-iron-select="_setSelectedOrganisation">
-              <template is="dom-repeat" items="[[ organisations ]]" as="organisation">
-                  <paper-icon-item organisation="[[ organisation ]]">
+          <paper-listbox id="list"
+                         class="dropdown-content"
+                         slot="dropdown-content"
+                         on-iron-select="_setSelectedOrganisation">
+              <template is="dom-repeat"
+                        items="[[ organisations ]]"
+                        as="organisation">
+                  <button class="paper-item" role="option" organisation="[[ organisation ]]">
                       <paper-icon-button
                               item-icon
                               icon="[[ _calculateIcon(organisation, defaultOrganisationId) ]]"
                               on-tap="_selectDefault"
                       ></paper-icon-button>
                       <span>[[ organisation.name ]]</span>
-                  </paper-icon-item>
+                  </button>
               </template>
               </iron-selector>
           </paper-listbox>
