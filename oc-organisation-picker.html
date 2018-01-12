@@ -186,7 +186,7 @@
                     payload.id = detail.item.organisation.id;
                     payload.profile = detail.item.organisation;
                     this.dispatch('receiveOrganisation', payload);
-                    this.dispatch('receiveClientId', request.response.toke);
+                    this.dispatch('receiveClientId', request.response.token);
                     this.selectedOrganisation = detail.item.organisation;
                 }.bind(this))
                 .catch(function() {
