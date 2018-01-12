@@ -168,17 +168,23 @@
         event.stopPropagation();
       },
 
-      _setSelectedOrganisation: function(event, detail) {
-        this.$.organisationApi.getOrganisationAccessToken(detail.item.organisation.id)
-            .then(function(request) {
-              this.clientId = request.response.token;
-              this.selectedOrganisation = detail.item.organisation;
-            }.bind(this))
-            .catch(function() {
-              this.clientId = null;
-              this.errorMessage = 'Failed to load organisation client ID';
-            }.bind(this));
+      _setSelectedOrganisation(event, detail) {
+          this.$.organisationApi.getOrganisationAccessToken(detail.item.organisation.id)
+              .then(function(request) {
+
+                  var payload = {};
+                  payload.id = detail.item.organisation.id;
+                  payload.profile = detail.item.organisation;
+                  this.dispatch('receiveOrganisation', payload);
+                  this.dispatch('receiveClientId', request.response.token);
+                  this.selectedOrganisation = detail.item.organisation;
+              }.bind(this))
+              .catch(function() {
+                  this.dispatch('clearOrganisation');
+                  this.errorMessage = 'Failed to load organisation client ID';
+              }.bind(this));
       }
+
 
     });
   </script>
