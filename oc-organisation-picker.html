@@ -2,200 +2,215 @@
 <link rel="import" href="../iron-localstorage/iron-localstorage.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../paper-item/paper-icon-item.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+
 <!-- Ensure Web Animations polyfill is loaded since neon-animation 2.0 doesn't import it -->
 <link rel="import" href="../neon-animation/web-animations.html">
+
 
 <link rel="import" href="../oc-authorization-api/oc-authorization-api.html">
 <link rel="import" href="../oc-organisation-api/oc-organisation-api.html">
 
 <dom-module id="oc-organisation-picker">
-  <template>
-      <style is="custom-style" include="paper-item-shared-styles"></style>
-      <style>
-          :host {
-              display: block;
-          }
-          paper-dropdown-menu {
-              width: 100%;
-          }
-          paper-icon-item  {
-              display: block;
-          }
-          paper-icon-item.iron-selected,
-          paper-icon-item:hover {
-              background: var(--primary-color);
-              color: white;
-          }
-      </style>
-      <paper-dropdown-menu
-              id="dropdown"
-              no-label-float
-              disabled$="[[ !organisations ]]"
-              invalid$="[[ errorMessage ]]"
-              error-message="[[ errorMessage ]]">
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
+            paper-dropdown-menu {
+                width: 100%;
+            }
+            paper-icon-item  {
+                display: block;
+            }
+            paper-icon-item.iron-selected,
+            paper-icon-item:hover {
+                background: var(--primary-color);
+                color: white;
+            }
+        </style>
 
-          <paper-listbox id="list"
-                         class="dropdown-content"
-                         slot="dropdown-content"
-                         on-iron-select="_setSelectedOrganisation">
-              <template is="dom-repeat"
-                        items="[[ organisations ]]"
-                        as="organisation">
-                  <button class="paper-item" role="option" organisation="[[ organisation ]]">
-                      <paper-icon-button
-                              item-icon
-                              icon="[[ _calculateIcon(organisation, defaultOrganisationId) ]]"
-                              on-tap="_selectDefault"
-                      ></paper-icon-button>
-                      <span>[[ organisation.name ]]</span>
-                  </button>
-              </template>
-              </iron-selector>
-          </paper-listbox>
-      </paper-dropdown-menu>
+        <iron-localstorage
+                use-raw
+                name="oc-organisation-picker-default"
+                value="{{_defaultOrganisationId }}"
+                on-iron-localstorage-load="_loadDefaultOrganisation"
+                on-iron-localstorage-load-empty="_loadDefaultOrganisation"
+        ></iron-localstorage>
 
-      <iron-localstorage
-      use-raw
-      name="oc-organisation-picker-default"
-      value="{{ defaultOrganisation }}"
-      on-iron-localstorage-load="_loadDefaultOrganisation"
-      on-iron-localstorage-load-empty="_loadDefaultOrganisation"
-      ></iron-localstorage>
+        <paper-dropdown-menu
+                id="dropdown"
+                no-label-float
+                disabled$="[[ !organisations ]]"
+                invalid$="[[ errorMessage ]]"
+                error-message="[[ errorMessage ]]">
 
-      <oc-authorization-api id="authApi"></oc-authorization-api>
-      <oc-organisation-api id="organisationApi"></oc-organisation-api>
+            <paper-listbox id="list"
+                           class="dropdown-content"
+                           slot="dropdown-content"
+                           on-iron-select="_setSelectedOrganisation">
+                <template is="dom-repeat"
+                          items="[[ organisations ]]"
+                          as="organisation">
+                    <paper-icon-item  role="option" organisation="[[ organisation ]]">
+                        <paper-icon-button id="default-[[item.id]]"
+                                           item-icon
+                                           icon$="icon:menu"
+                                           on-tap="_selectDefault"
+                        ></paper-icon-button>
+                        <span>[[ organisation.name ]]</span>
+                    </paper-icon-item>
+                </template>
+                </iron-selector>
+            </paper-listbox>
+        </paper-dropdown-menu>
 
-  </template>
+        <oc-authorization-api id="authApi"></oc-authorization-api>
+        <oc-organisation-api id="organisationApi"></oc-organisation-api>
 
-  <script>
-    /**
-     * `oc-organisation-picker`
-     * Organistion Picker
-     *
-     * @customElement
-     * @polymer
-     * @demo demo/index.html
-     */
-    class OcOrganisationPicker extends Ordercloud.ReduxMixin(Polymer.Element) {
-        static get is() { return 'oc-organisation-picker'; }
-        static get properties() {
-            return {
-                /**
-                 * The permissions used to determine the list of organisations.
-                 */
-                permission: String,
-                /**
-                 * The selected organisation
-                 */
-                selectedOrganisation: {
-                    type: Number,
-                    statePath: 'organisation.id'
-                },
-                /**
-                 * The default organisation ID
-                 */
-                defaultOrganisationId: Number,
-                /**
-                 * The list of organisations the user can choose from
-                 */
-                organisations: {
-                    type: Array,
-                    notify: true
-                },
-            };
-        }
+    </template>
 
-        static get observers() {
-            return [
-            '_initSelectedOrganisation(organisations.*)'
-            ]
-        }
-
-        ready() {
-            super.ready();
-            this._loadOrganisations(this.permission);
-        }
-
+    <script>
         /**
-        * Load the organisations where the current user has the given permission.
-        * @param {String} permission
-        */
-        _loadOrganisations(permission) {
-
-            if (!permission) {
-                this.organisations = null;
-                return;
+         * `oc-organisation-picker`
+         * Organistion Picker
+         *
+         * @customElement
+         * @polymer
+         * @demo demo/index.html
+         */
+        class OcOrganisationPicker extends Ordercloud.ReduxMixin(Polymer.Element) {
+            static get is() { return 'oc-organisation-picker'; }
+            static get properties() {
+                return {
+                    /**
+                     * The permissions used to determine the list of organisations.
+                     */
+                    permission: String,
+                    /**
+                     * The selected organisation
+                     */
+                    selectedOrganisation: {
+                        type: Number,
+                        statePath: 'organisation.id'
+                    },
+                    /**
+                     * The default organisation ID
+                     */
+                    __defaultOrganisationId: Number,
+                    /**
+                     * flag if the user has been signed in
+                     */
+                    _signedIn : {
+                        type: Boolean,
+                        statePath: 'identity.loggedIn',
+                        observer: '_loadOrganisations'
+                    },
+                    /**
+                     * The list of organisations the user can choose from
+                     */
+                    organisations: {
+                        type: Array,
+                        notify: true
+                    },
+                };
             }
 
-            this.$.authApi.getOrganisations(permission)
-                .then(function(request) {
-                    this.organisations = request.response.results
-                        .sort(function(a, b) {
-                            var nameA = a.name.toUpperCase(); // ignore upper and lowercase
-                            var nameB = b.name.toUpperCase();
-                            if (nameA < nameB) {
-                                return -1;
-                            }
-                            if (nameA > nameB) {
-                                return 1;
-                            }
-                            return 0;
-                        });
-                }.bind(this))
-                .catch(function() {
-                    this.errorMessage = 'Failed to load organisations';
-                }.bind(this));
-        }
-
-        _loadDefaultOrganisation() {
-            this.defaultOrganisationId = this.defaultOrganisation ? Number(this.defaultOrganisation) : null;
-        }
-
-        _initSelectedOrganisation(organisations) {
-            if (!organisations.base || organisations.base.length === 0) {
-                this.errorMessage = 'No organisations';
-                return;
+            static get observers() {
+                return [
+                    '_initSelectedOrganisation(organisations.*)',
+                ]
             }
 
-            var selectedIndex = organisations.base.findIndex(function(organisation) {
-                return organisation.id === this.defaultOrganisationId;
-            }, this);
-            this.$.list.selectIndex(selectedIndex > 0 ? selectedIndex : 0);
-        }
-
-        _calculateIcon(organisation, defaultOrganisationId) {
-            return organisation.id === defaultOrganisationId ? "star" : "star-border";
-        }
-
-        _selectDefault(event) {
-            if (this.defaultOrganisationId === event.model.organisation.id) {
-                this.defaultOrganisationId = this.defaultOrganisation = null;
+            ready() {
+                super.ready();
             }
-            else {
-                this.defaultOrganisationId = this.defaultOrganisation = event.model.organisation.id;
+
+            /**
+             * Load the organisations where the current user has the given permission.
+             * @param {String} permission
+             */
+            _loadOrganisations(signedIn) {
+
+                if (!signedIn) {
+                    this.organisations = null;
+                    return;
+                }
+
+                let permission = 'bWFuYWdlbWVudF9jb25zb2xlOnZpZXc6b3JnYW5pc2F0aW9u';
+
+                this.$.authApi.getOrganisations(permission)
+                    .then(function(request) {
+                        this.organisations = request.response.results
+                            .sort(function(a, b) {
+                                let nameA = a.name.toUpperCase(); // ignore upper and lowercase
+                                let nameB = b.name.toUpperCase();
+
+                                if (nameA < nameB) {
+                                    return -1;
+                                }
+                                if (nameA > nameB) {
+                                    return 1;
+                                }
+                                return 0;
+                            });
+                    }.bind(this))
+                    .catch(function() {
+                        this.errorMessage = 'Failed to load organisations';
+                    }.bind(this));
             }
-            event.stopPropagation();
+
+            _loadDefaultOrganisation() {
+                this._defaultId = this._defaultOrganisationId ? Number(this._defaultOrganisationId) : null;
+            }
+
+            _initSelectedOrganisation(organisations) {
+                if (!organisations.base || organisations.base.length === 0) {
+                    this.errorMessage = 'No organisations';
+                    return;
+                }
+
+                var selectedIndex = organisations.base.findIndex(function(organisation) {
+                    return organisation.id === this._defaultId;
+                }, this);
+                this.$.list.selectIndex(selectedIndex > 0 ? selectedIndex : 0);
+            }
+
+            _calculateIcon(organisation, defaultOrganisationId) {
+                return organisation.id === defaultOrganisationId ? "star" : "star-border";
+            }
+
+            _selectDefault(event) {
+                //unset the default if alleady set
+                if (this._defaultOrganisationId === event.model.organisation.id) {
+                    this._defaultOrganisationId = this._defaultId = null;
+                }
+                else {
+                    this._defaultOrganisationId  = this._defaultId = event.model.organisation.id;
+                }
+                event.stopPropagation();
+            }
+
+            _setSelectedOrganisation(event, detail) {
+                this.$.organisationApi.getOrganisationAccessToken(detail.item.organisation.id)
+                    .then(function(request) {
+
+                        var payload = {};
+                        payload.id = detail.item.organisation.id;
+                        payload.profile = detail.item.organisation;
+                        this.dispatch('receiveOrganisation', payload);
+                        this.dispatch('receiveClientId', request.response.token);
+                        this.selectedOrganisation = detail.item.organisation;
+                    }.bind(this))
+                    .catch(function() {
+                        this.dispatch('clearOrganisation');
+                        this.errorMessage = 'Failed to load organisation client ID';
+                    }.bind(this));
+            }
         }
 
-        _setSelectedOrganisation(event, detail) {
-            this.$.organisationApi.getOrganisationAccessToken(detail.item.organisation.id)
-                .then(function(request) {
-
-                    var payload = {};
-                    payload.id = detail.item.organisation.id;
-                    payload.profile = detail.item.organisation;
-                    this.dispatch('receiveOrganisation', payload);
-                    this.dispatch('receiveClientId', request.response.token);
-                    this.selectedOrganisation = detail.item.organisation;
-                }.bind(this))
-                .catch(function() {
-                    this.dispatch('clearOrganisation');
-                    this.errorMessage = 'Failed to load organisation client ID';
-                }.bind(this));
-        }
-    }
-
-    window.customElements.define(OcOrganisationPicker.is, OcOrganisationPicker);
-  </script>
+        window.customElements.define(OcOrganisationPicker.is, OcOrganisationPicker);
+    </script>
 </dom-module>
