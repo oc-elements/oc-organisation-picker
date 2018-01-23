@@ -50,6 +50,13 @@
                 .add-button a {
                     color:#fff;
                 }
+
+                .text-center {
+                    text-align: center;
+                }
+                .text-left {
+                    text-align: left;
+                }
             </style>
         </custom-style>
 
@@ -66,7 +73,8 @@
                 no-label-float
                 disabled$="[[ !organisations ]]"
                 invalid$="[[ errorMessage ]]"
-                error-message="[[ errorMessage ]]">
+                error-message="[[ errorMessage ]]"
+                class="text-center">
 
             <paper-listbox id="list"
                            class="dropdown-content"
@@ -75,13 +83,13 @@
                 <template is="dom-repeat"
                           items="[[ organisations ]]"
                           as="organisation">
-                    <paper-icon-item  role="option" organisation="[[ organisation ]]">
+                    <paper-icon-item  role="option" organisation="[[ organisation ]]" class="text-left">
                         <paper-icon-button id="default-[[item.id]]"
                                            item-icon
                                            icon$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
                                            on-tap="_selectDefault"
                         ></paper-icon-button>
-                        <span>[[ organisation.name ]]</span>
+                        <span class="text-center">[[ organisation.name ]]</span>
                     </paper-icon-item>
                 </template>
                 </iron-selector>
