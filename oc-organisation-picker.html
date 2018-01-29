@@ -23,28 +23,47 @@
         <custom-style>
             <style>
                 :host {
+                    --paper-input-container-input-color: #fff;
                     display: block;
                 }
                 paper-dropdown-menu {
                     width: 100%;
-                    color: whitesmoke;
-                    --paper-input-container-input: {
-                        @apply --organisation-picker-font-color;
-                    }
                 }
                 paper-icon-item  {
                     display: block;
                 }
+
                 paper-icon-item.iron-selected,
                 paper-icon-item:hover {
-                    background: var(--primary-color);
+                    background: #635548;
                     color: white;
                 }
+                a {
+                    text-decoration: none;
+                }
+                .add-button {
+                    background-color:green;
+                    margin:20px 0;
+                }
+                .add-button a {
+                    color:#fff;
+                }
+
                 .text-center {
                     text-align: center;
                 }
                 .text-left {
                     text-align: left;
+                }
+                .dropdown-content {
+                    color: #fff !important;
+                    background: #3d332a;
+                }
+                .star {
+                    color:#e0992f;
+                }
+                .start-border {
+                    color:#e0992f !important;
                 }
 
             </style>
@@ -77,6 +96,7 @@
                         <paper-icon-button id="default-[[item.id]]"
                                            item-icon
                                            icon$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
+                                           class$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
                                            on-tap="_selectDefault"
                         ></paper-icon-button>
                         <span class="text-center">[[ organisation.name ]]</span>
@@ -85,7 +105,6 @@
                 </iron-selector>
             </paper-listbox>
         </paper-dropdown-menu>
-
         <oc-authorization-api id="authApi"></oc-authorization-api>
         <oc-organisation-api id="organisationApi"></oc-organisation-api>
 
