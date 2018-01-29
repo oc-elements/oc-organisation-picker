@@ -134,6 +134,11 @@
                         type: Array,
                         notify: true
                     },
+
+					isLoading: {
+						type: Boolean,
+						notify: true
+					}
                 };
             }
 
@@ -213,6 +218,7 @@
             }
 
             _setSelectedOrganisation(event, detail) {
+				this.isLoading = true;
                 this.$.organisationApi.getOrganisationAccessToken(detail.item.organisation.id)
                     .then((request) => {
                         const payload = {};
@@ -223,10 +229,12 @@
                         this.selectedOrganisation = detail.item.organisation;
 
                         this.errorMessage = null;
+				        this.isLoading = false;
                     })
                     .catch(() => {
                         this.dispatch('clearOrganisation');
                         this.errorMessage = 'Failed to load organisation client ID';
+				        this.isLoading = false;
                     });
             }
         }
