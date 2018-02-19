@@ -2,12 +2,17 @@
 <link rel="import" href="../iron-localstorage/iron-localstorage.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
-<link rel="import" href="../iron-icons/iron-icons.html">
+
 <link rel="import" href="../paper-item/paper-icon-item.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 
 <!-- Ensure Web Animations polyfill is loaded since neon-animation 2.0 doesn't import it -->
 <link rel="import" href="../neon-animation/web-animations.html">
+
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-iconset-svg/iron-iconset-svg.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icons/communication-icons.html">
 
 
 <link rel="import" href="../oc-authorization-api/oc-authorization-api.html">
@@ -15,22 +20,54 @@
 
 <dom-module id="oc-organisation-picker">
     <template>
-        <style>
-            :host {
-                display: block;
-            }
-            paper-dropdown-menu {
-                width: 100%;
-            }
-            paper-icon-item  {
-                display: block;
-            }
-            paper-icon-item.iron-selected,
-            paper-icon-item:hover {
-                background: var(--primary-color);
-                color: white;
-            }
-        </style>
+        <custom-style>
+            <style>
+                :host {
+                    --paper-input-container-input-color: #fff;
+                    display: block;
+                }
+                paper-dropdown-menu {
+                    width: 100%;
+                }
+                paper-icon-item  {
+                    display: block;
+                }
+
+                paper-icon-item.iron-selected,
+                paper-icon-item:hover {
+                    background: #635548;
+                    color: white;
+                }
+                a {
+                    text-decoration: none;
+                }
+                .add-button {
+                    background-color:green;
+                    margin:20px 0;
+                }
+                .add-button a {
+                    color:#fff;
+                }
+
+                .text-center {
+                    text-align: center;
+                }
+                .text-left {
+                    text-align: left;
+                }
+                .dropdown-content {
+                    color: #fff !important;
+                    background: #3d332a;
+                }
+                .star {
+                    color:#e0992f;
+                }
+                .start-border {
+                    color:#e0992f !important;
+                }
+
+            </style>
+        </custom-style>
 
         <iron-localstorage
                 use-raw
@@ -45,7 +82,8 @@
                 no-label-float
                 disabled$="[[ !organisations ]]"
                 invalid$="[[ errorMessage ]]"
-                error-message="[[ errorMessage ]]">
+                error-message="[[ errorMessage ]]"
+                class="text-center">
 
             <paper-listbox id="list"
                            class="dropdown-content"
@@ -54,19 +92,19 @@
                 <template is="dom-repeat"
                           items="[[ organisations ]]"
                           as="organisation">
-                    <paper-icon-item  role="option" organisation="[[ organisation ]]">
+                    <paper-icon-item  role="option" organisation="[[ organisation ]]" class="text-left">
                         <paper-icon-button id="default-[[item.id]]"
                                            item-icon
-                                           icon$="icon:menu"
+                                           icon$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
+                                           class$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
                                            on-tap="_selectDefault"
                         ></paper-icon-button>
-                        <span>[[ organisation.name ]]</span>
+                        <span class="text-center">[[ organisation.name ]]</span>
                     </paper-icon-item>
                 </template>
                 </iron-selector>
             </paper-listbox>
         </paper-dropdown-menu>
-
         <oc-authorization-api id="authApi"></oc-authorization-api>
         <oc-organisation-api id="organisationApi"></oc-organisation-api>
 
@@ -115,6 +153,11 @@
                         type: Array,
                         notify: true
                     },
+
+                    isLoading: {
+                        type: Boolean,
+                        notify: true
+                    }
                 };
             }
 
@@ -194,20 +237,9 @@
             }
 
             _setSelectedOrganisation(event, detail) {
-                this.$.organisationApi.getOrganisationAccessToken(detail.item.organisation.id)
-                    .then(function(request) {
-
-                        var payload = {};
-                        payload.id = detail.item.organisation.id;
-                        payload.profile = detail.item.organisation;
-                        this.dispatch('receiveOrganisation', payload);
-                        this.dispatch('receiveClientId', request.response.token);
-                        this.selectedOrganisation = detail.item.organisation;
-                    }.bind(this))
-                    .catch(function() {
-                        this.dispatch('clearOrganisation');
-                        this.errorMessage = 'Failed to load organisation client ID';
-                    }.bind(this));
+                this.isLoading = true;
+                this.dispatch('fetchClientIdIfNeeded', detail.item.organisation.id).then(() => this.dispatch('fetchOrganisationIfNeeded', detail.item.organisation.id));
+                this.isLoading = false;
             }
         }
 
