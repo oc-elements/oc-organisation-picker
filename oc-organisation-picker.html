@@ -25,10 +25,23 @@
                 :host {
                     --paper-input-container-input-color: #fff;
                     display: block;
+
+                    --paper-input-container-underline: {
+                        display: none;
+                    };
+                    --paper-input-container-underline-focus: {
+                        display: none;
+                    };
+                    --paper-input-container-underline-disabled: {
+                        display: none;
+                    };
                 }
+
                 paper-dropdown-menu {
-                    width: 100%;
+                    width: calc(100% - 40px);
+                    padding-left:40px;
                 }
+
                 paper-icon-item  {
                     display: block;
                 }
@@ -41,9 +54,10 @@
                 a {
                     text-decoration: none;
                 }
-                .add-button {
-                    background-color:green;
-                    margin:20px 0;
+
+                .picker-container {
+                    margin: -12px 22px;
+
                 }
                 .add-button a {
                     color:#fff;
@@ -65,6 +79,10 @@
                 .start-border {
                     color:#e0992f !important;
                 }
+                .store-icon {
+                    top: 32px;
+                    color: #fff;
+                }
 
             </style>
         </custom-style>
@@ -76,14 +94,15 @@
                 on-iron-localstorage-load="_loadDefaultOrganisation"
                 on-iron-localstorage-load-empty="_loadDefaultOrganisation"
         ></iron-localstorage>
-
+        <div class="picker-container">
+		<iron-icon icon="icons:store" class="store-icon"></iron-icon>
         <paper-dropdown-menu
                 id="dropdown"
                 no-label-float
                 disabled$="[[ !organisations ]]"
                 invalid$="[[ errorMessage ]]"
                 error-message="[[ errorMessage ]]"
-                class="text-center">
+                class="menu-default-text">
 
             <paper-listbox id="list"
                            class="dropdown-content"
@@ -105,6 +124,7 @@
                 </iron-selector>
             </paper-listbox>
         </paper-dropdown-menu>
+        </div>
         <oc-authorization-api id="authApi"></oc-authorization-api>
         <oc-organisation-api id="organisationApi"></oc-organisation-api>
 
