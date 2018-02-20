@@ -26,10 +26,12 @@
                     --paper-input-container-input-color: #fff;
                     display: block;
                 }
+
                 paper-dropdown-menu {
                     width: 100%;
                 }
-                paper-icon-item  {
+
+                paper-icon-item {
                     display: block;
                 }
 
@@ -38,32 +40,39 @@
                     background: #635548;
                     color: white;
                 }
+
                 a {
                     text-decoration: none;
                 }
+
                 .add-button {
-                    background-color:green;
-                    margin:20px 0;
+                    background-color: green;
+                    margin: 20px 0;
                 }
+
                 .add-button a {
-                    color:#fff;
+                    color: #fff;
                 }
 
                 .text-center {
                     text-align: center;
                 }
+
                 .text-left {
                     text-align: left;
                 }
+
                 .dropdown-content {
                     color: #fff !important;
                     background: #3d332a;
                 }
+
                 .star {
-                    color:#e0992f;
+                    color: #e0992f;
                 }
+
                 .start-border {
-                    color:#e0992f !important;
+                    color: #e0992f !important;
                 }
 
             </style>
@@ -92,7 +101,7 @@
                 <template is="dom-repeat"
                           items="[[ organisations ]]"
                           as="organisation">
-                    <paper-icon-item  role="option" organisation="[[ organisation ]]" class="text-left">
+                    <paper-icon-item role="option" organisation="[[ organisation ]]" class="text-left">
                         <paper-icon-button id="default-[[item.id]]"
                                            item-icon
                                            icon$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
@@ -120,7 +129,10 @@
          * @demo demo/index.html
          */
         class OcOrganisationPicker extends Ordercloud.ReduxMixin(Polymer.Element) {
-            static get is() { return 'oc-organisation-picker'; }
+            static get is() {
+                return 'oc-organisation-picker';
+            }
+
             static get properties() {
                 return {
                     /**
@@ -141,7 +153,7 @@
                     /**
                      * flag if the user has been signed in
                      */
-                    _signedIn : {
+                    _signedIn: {
                         type: Boolean,
                         statePath: 'identity.loggedIn',
                         observer: '_loadOrganisations'
@@ -185,9 +197,9 @@
                 let permission = 'bWFuYWdlbWVudF9jb25zb2xlOnZpZXc6b3JnYW5pc2F0aW9u';
 
                 this.$.authApi.getOrganisations(permission)
-                    .then(function(request) {
+                    .then(function (request) {
                         this.organisations = request.response.results
-                            .sort(function(a, b) {
+                            .sort(function (a, b) {
                                 let nameA = a.name.toUpperCase(); // ignore upper and lowercase
                                 let nameB = b.name.toUpperCase();
 
@@ -200,7 +212,7 @@
                                 return 0;
                             });
                     }.bind(this))
-                    .catch(function() {
+                    .catch(function () {
                         this.errorMessage = 'Failed to load organisations';
                     }.bind(this));
             }
@@ -215,7 +227,7 @@
                     return;
                 }
 
-                var selectedIndex = organisations.base.findIndex(function(organisation) {
+                var selectedIndex = organisations.base.findIndex(function (organisation) {
                     return organisation.id === this._defaultId;
                 }, this);
                 this.$.list.selectIndex(selectedIndex > 0 ? selectedIndex : 0);
@@ -231,14 +243,15 @@
                     this._defaultOrganisationId = this._defaultId = null;
                 }
                 else {
-                    this._defaultOrganisationId  = this._defaultId = event.model.organisation.id;
+                    this._defaultOrganisationId = this._defaultId = event.model.organisation.id;
                 }
                 event.stopPropagation();
             }
 
             _setSelectedOrganisation(event, detail) {
                 this.isLoading = true;
-                this.dispatch('fetchClientIdIfNeeded', detail.item.organisation.id).then(() => this.dispatch('fetchOrganisationIfNeeded', detail.item.organisation.id));
+                this.dispatch('fetchClientIdIfNeeded', detail.item.organisation.id).then(() => this.dispatch('fetchOrganisationIfNeeded', detail.item.organisation.id))
+                    .then(() => this.dispatch('fetchAccountsIfNeeded', detail.item.organisation.id));
                 this.isLoading = false;
             }
         }
