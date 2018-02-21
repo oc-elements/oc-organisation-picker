@@ -25,13 +25,24 @@
                 :host {
                     --paper-input-container-input-color: #fff;
                     display: block;
+
+                    --paper-input-container-underline: {
+                        display: none;
+                    };
+                    --paper-input-container-underline-focus: {
+                        display: none;
+                    };
+                    --paper-input-container-underline-disabled: {
+                        display: none;
+                    };
                 }
 
                 paper-dropdown-menu {
-                    width: 100%;
+                    width: calc(100% - 40px);
+                    padding-left:40px;
                 }
 
-                paper-icon-item {
+                paper-icon-item  {
                     display: block;
                 }
 
@@ -40,39 +51,37 @@
                     background: #635548;
                     color: white;
                 }
-
                 a {
                     text-decoration: none;
                 }
 
-                .add-button {
-                    background-color: green;
-                    margin: 20px 0;
-                }
+                .picker-container {
+                    margin: -12px 22px;
 
+                }
                 .add-button a {
-                    color: #fff;
+                    color:#fff;
                 }
 
                 .text-center {
                     text-align: center;
                 }
-
                 .text-left {
                     text-align: left;
                 }
-
                 .dropdown-content {
                     color: #fff !important;
                     background: #3d332a;
                 }
-
                 .star {
-                    color: #e0992f;
+                    color:#e0992f;
                 }
-
                 .start-border {
-                    color: #e0992f !important;
+                    color:#e0992f !important;
+                }
+                .store-icon {
+                    top: 32px;
+                    color: #fff;
                 }
 
             </style>
@@ -85,14 +94,15 @@
                 on-iron-localstorage-load="_loadDefaultOrganisation"
                 on-iron-localstorage-load-empty="_loadDefaultOrganisation"
         ></iron-localstorage>
-
+        <div class="picker-container">
+		<iron-icon icon="icons:store" class="store-icon"></iron-icon>
         <paper-dropdown-menu
                 id="dropdown"
                 no-label-float
                 disabled$="[[ !organisations ]]"
                 invalid$="[[ errorMessage ]]"
                 error-message="[[ errorMessage ]]"
-                class="text-center">
+                >
 
             <paper-listbox id="list"
                            class="dropdown-content"
@@ -101,7 +111,7 @@
                 <template is="dom-repeat"
                           items="[[ organisations ]]"
                           as="organisation">
-                    <paper-icon-item role="option" organisation="[[ organisation ]]" class="text-left">
+                    <paper-icon-item  role="option" organisation="[[ organisation ]]" class="text-left">
                         <paper-icon-button id="default-[[item.id]]"
                                            item-icon
                                            icon$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
@@ -114,6 +124,7 @@
                 </iron-selector>
             </paper-listbox>
         </paper-dropdown-menu>
+        </div>
         <oc-authorization-api id="authApi"></oc-authorization-api>
         <oc-organisation-api id="organisationApi"></oc-organisation-api>
 
@@ -167,8 +178,8 @@
                     },
 
                     isLoading: {
-                        type: Boolean,
-                        notify: true
+                      type: Boolean,
+                      notify: true
                     }
                 };
             }
@@ -253,6 +264,7 @@
                 this.dispatch('fetchClientIdIfNeeded', detail.item.organisation.id).then(() => this.dispatch('fetchOrganisationIfNeeded', detail.item.organisation.id))
                     .then(() => this.dispatch('fetchAccountsIfNeeded', detail.item.organisation.id));
                 this.isLoading = false;
+        });
             }
         }
 
