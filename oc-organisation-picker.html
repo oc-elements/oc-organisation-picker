@@ -23,10 +23,7 @@
         <custom-style>
             <style>
                 :host {
-                    --paper-input-container-input: {
-                        font-size:14px !important;
-                        font-weight:500 !important;
-                    };
+
                     --paper-input-container-input-color: #fff;
                     display: block;
 
@@ -38,6 +35,24 @@
                     };
                     --paper-input-container-underline-disabled: {
                         display: none;
+                    };
+                }
+
+                .input-font {
+                    --paper-input-container-label: {
+                        font-size: 20px;
+                    };
+                    --paper-input-container-input:{
+                        font-size:14px;
+                    };
+                    --paper-font-subhead: {
+                        font-size:14px;
+                    };
+                    --paper-input-container-input:{
+                        font-weight:400;
+                    };
+                    --paper-font-subhead: {
+                        font-weight:400;
                     };
                 }
 
@@ -99,35 +114,36 @@
                 on-iron-localstorage-load-empty="_loadDefaultOrganisation"
         ></iron-localstorage>
         <div class="picker-container">
-		<iron-icon icon="icons:store" class="store-icon"></iron-icon>
-        <paper-dropdown-menu
-                id="dropdown"
-                no-label-float
-                disabled$="[[ !organisations ]]"
-                invalid$="[[ errorMessage ]]"
-                error-message="[[ errorMessage ]]"
-                >
+            <iron-icon icon="icons:store" class="store-icon"></iron-icon>
+            <paper-dropdown-menu
+                    id="dropdown"
+                    no-label-float
+                    disabled$="[[ !organisations ]]"
+                    invalid$="[[ errorMessage ]]"
+                    error-message="[[ errorMessage ]]"
+                    class="input-font"
+            >
 
-            <paper-listbox id="list"
-                           class="dropdown-content"
-                           slot="dropdown-content"
-                           on-iron-select="_setSelectedOrganisation">
-                <template is="dom-repeat"
-                          items="[[ organisations ]]"
-                          as="organisation">
-                    <paper-icon-item  role="option" organisation="[[ organisation ]]" class="text-left">
-                        <paper-icon-button id="default-[[item.id]]"
-                                           item-icon
-                                           icon$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
-                                           class$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
-                                           on-tap="_selectDefault"
-                        ></paper-icon-button>
-                        <span class="text-center">[[ organisation.name ]]</span>
-                    </paper-icon-item>
-                </template>
-                </iron-selector>
-            </paper-listbox>
-        </paper-dropdown-menu>
+                <paper-listbox id="list"
+                               class="dropdown-content"
+                               slot="dropdown-content"
+                               on-iron-select="_setSelectedOrganisation">
+                    <template is="dom-repeat"
+                              items="[[ organisations ]]"
+                              as="organisation">
+                        <paper-icon-item  role="option" organisation="[[ organisation ]]" class="text-left">
+                            <paper-icon-button id="default-[[item.id]]"
+                                               item-icon
+                                               icon$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
+                                               class$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
+                                               on-tap="_selectDefault"
+                            ></paper-icon-button>
+                            <span class="text-center">[[ organisation.name ]]</span>
+                        </paper-icon-item>
+                    </template>
+                    </iron-selector>
+                </paper-listbox>
+            </paper-dropdown-menu>
         </div>
         <oc-authorization-api id="authApi"></oc-authorization-api>
         <oc-organisation-api id="organisationApi"></oc-organisation-api>
