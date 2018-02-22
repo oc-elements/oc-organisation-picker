@@ -24,8 +24,8 @@
             <style>
                 :host {
                     --paper-input-container-input: {
-                        font-size:14px !important;
-                        font-weight:500 !important;
+                        font-size: 14px !important;
+                        font-weight: 500 !important;
                     };
                     --paper-input-container-input-color: #fff;
                     display: block;
@@ -43,10 +43,10 @@
 
                 paper-dropdown-menu {
                     width: calc(100% - 40px);
-                    padding-left:40px;
+                    padding-left: 40px;
                 }
 
-                paper-icon-item  {
+                paper-icon-item {
                     display: block;
                 }
 
@@ -55,6 +55,7 @@
                     background: #635548;
                     color: white;
                 }
+
                 a {
                     text-decoration: none;
                 }
@@ -63,26 +64,32 @@
                     margin: -12px 22px;
 
                 }
+
                 .add-button a {
-                    color:#fff;
+                    color: #fff;
                 }
 
                 .text-center {
                     text-align: center;
                 }
+
                 .text-left {
                     text-align: left;
                 }
+
                 .dropdown-content {
                     color: #fff !important;
                     background: #3d332a;
                 }
+
                 .star {
-                    color:#e0992f;
+                    color: #e0992f;
                 }
+
                 .start-border {
-                    color:#e0992f !important;
+                    color: #e0992f !important;
                 }
+
                 .store-icon {
                     top: 32px;
                     color: #fff;
@@ -99,35 +106,35 @@
                 on-iron-localstorage-load-empty="_loadDefaultOrganisation"
         ></iron-localstorage>
         <div class="picker-container">
-		<iron-icon icon="icons:store" class="store-icon"></iron-icon>
-        <paper-dropdown-menu
-                id="dropdown"
-                no-label-float
-                disabled$="[[ !organisations ]]"
-                invalid$="[[ errorMessage ]]"
-                error-message="[[ errorMessage ]]"
-                >
+            <iron-icon icon="icons:store" class="store-icon"></iron-icon>
+            <paper-dropdown-menu
+                    id="dropdown"
+                    no-label-float
+                    disabled$="[[ !organisations ]]"
+                    invalid$="[[ errorMessage ]]"
+                    error-message="[[ errorMessage ]]"
+            >
 
-            <paper-listbox id="list"
-                           class="dropdown-content"
-                           slot="dropdown-content"
-                           on-iron-select="_setSelectedOrganisation">
-                <template is="dom-repeat"
-                          items="[[ organisations ]]"
-                          as="organisation">
-                    <paper-icon-item  role="option" organisation="[[ organisation ]]" class="text-left">
-                        <paper-icon-button id="default-[[item.id]]"
-                                           item-icon
-                                           icon$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
-                                           class$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
-                                           on-tap="_selectDefault"
-                        ></paper-icon-button>
-                        <span class="text-center">[[ organisation.name ]]</span>
-                    </paper-icon-item>
-                </template>
-                </iron-selector>
-            </paper-listbox>
-        </paper-dropdown-menu>
+                <paper-listbox id="list"
+                               class="dropdown-content"
+                               slot="dropdown-content"
+                               on-iron-select="_setSelectedOrganisation">
+                    <template is="dom-repeat"
+                              items="[[ organisations ]]"
+                              as="organisation">
+                        <paper-icon-item role="option" organisation="[[ organisation ]]" class="text-left">
+                            <paper-icon-button id="default-[[item.id]]"
+                                               item-icon
+                                               icon$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
+                                               class$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
+                                               on-tap="_selectDefault"
+                            ></paper-icon-button>
+                            <span class="text-center">[[ organisation.name ]]</span>
+                        </paper-icon-item>
+                    </template>
+                    </iron-selector>
+                </paper-listbox>
+            </paper-dropdown-menu>
         </div>
         <oc-authorization-api id="authApi"></oc-authorization-api>
         <oc-organisation-api id="organisationApi"></oc-organisation-api>
@@ -182,8 +189,8 @@
                     },
 
                     isLoading: {
-                      type: Boolean,
-                      notify: true
+                        type: Boolean,
+                        notify: true
                     }
                 };
             }
@@ -265,7 +272,11 @@
 
             _setSelectedOrganisation(event, detail) {
                 this.isLoading = true;
-                this.dispatch('fetchClientIdIfNeeded', detail.item.organisation.id).then(() => this.dispatch('fetchOrganisationIfNeeded', detail.item.organisation.id))
+                Promise.all([
+                    this.dispatch('fetchClientIdIfNeeded', detail.item.organisation.id),
+                    this.dispatch('fetchOrganisationIfNeeded', detail.item.organisation.id),
+                    this.dispatch('InvalidateAccounts')
+                ])
                     .then(() => this.dispatch('fetchAccountsIfNeeded', detail.item.organisation.id));
                 this.isLoading = false;
             }
