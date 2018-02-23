@@ -171,7 +171,7 @@
                     /**
                      * The default organisation ID
                      */
-                    __defaultOrganisationId: Number,
+                    _defaultOrganisationId: Number,
                     /**
                      * flag if the user has been signed in
                      */
@@ -233,10 +233,17 @@
                                 }
                                 return 0;
                             });
+
+                        if(request.response.count === 0){
+                            this.dispatch('receiveNoOrganisation');
+                        }
+
                     }.bind(this))
                     .catch(function () {
                         this.errorMessage = 'Failed to load organisations';
                     }.bind(this));
+
+
             }
 
             _loadDefaultOrganisation() {
@@ -263,8 +270,7 @@
                 //unset the default if alleady set
                 if (this._defaultOrganisationId === event.model.organisation.id) {
                     this._defaultOrganisationId = this._defaultId = null;
-                }
-                else {
+                }else {
                     this._defaultOrganisationId = this._defaultId = event.model.organisation.id;
                 }
                 event.stopPropagation();
