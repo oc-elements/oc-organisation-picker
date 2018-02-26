@@ -281,7 +281,7 @@
                 Promise.all([
                     this.dispatch('fetchClientIdIfNeeded', detail.item.organisation.id),
                     this.dispatch('fetchOrganisationIfNeeded', detail.item.organisation.id),
-                    this.dispatch('InvalidateAccounts')
+                    this.dispatch('invalidateAccounts')
                 ])
                     .then(() => this.dispatch('fetchAccountsIfNeeded', detail.item.organisation.id));
                 this.isLoading = false;
