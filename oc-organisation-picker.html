@@ -33,6 +33,12 @@
 
                     display: block;
 
+                    --paper-input-container: {
+                        display: flex;
+                        line-height: normal;
+                        margin-left: -10px;
+                    };
+
                     --paper-input-container-underline: {
                         display: none;
                     };
@@ -47,6 +53,9 @@
                 paper-dropdown-menu {
                     width: calc(100% - 40px);
                     padding-left: 40px;
+                    -webkit-box-shadow: -1px 1px 9px 0 rgb(0,0,0);
+                    -moz-box-shadow: -1px 1px 9px 0 rgb(0,0,0);
+                    box-shadow: -1px 1px 9px 0 rgb(0,0,0);
                 }
 
                 paper-icon-item {
@@ -63,21 +72,8 @@
                     text-decoration: none;
                 }
 
-                .picker-container {
-                    margin: -12px 22px;
-
-                }
-
                 .add-button a {
                     color: #fff;
-                }
-
-                .text-center {
-                    text-align: center;
-                }
-
-                .text-left {
-                    text-align: left;
                 }
 
                 .dropdown-content {
@@ -98,6 +94,12 @@
                     color: #fff;
                 }
 
+                .picker-container {
+                    padding-left: 10px;
+                    margin-top: -14px;
+                    padding-right: 10px;
+                }
+
             </style>
         </custom-style>
 
@@ -109,35 +111,36 @@
                 on-iron-localstorage-load-empty="_loadDefaultOrganisation"
         ></iron-localstorage>
         <div class="picker-container">
-            <iron-icon icon="icons:store" class="store-icon"></iron-icon>
-            <paper-dropdown-menu
-                    id="dropdown"
-                    no-label-float
-                    disabled$="[[ !organisations ]]"
-                    invalid$="[[ errorMessage ]]"
-                    error-message="[[ errorMessage ]]"
-            >
+            <div>
+                <iron-icon icon="icons:store" class="store-icon"></iron-icon>
+                <paper-dropdown-menu
+                        id="dropdown"
+                        no-label-float
+                        disabled$="[[ !organisations ]]"
+                        invalid$="[[ errorMessage ]]"
+                        error-message="[[ errorMessage ]]"
+                >
 
-                <paper-listbox id="list"
-                               class="dropdown-content"
-                               slot="dropdown-content"
-                               on-iron-select="_setSelectedOrganisation">
-                    <template is="dom-repeat"
-                              items="[[ organisations ]]"
-                              as="organisation">
-                        <paper-icon-item role="option" organisation="[[ organisation ]]" class="text-left">
-                            <paper-icon-button id="default-[[item.id]]"
-                                               item-icon
-                                               icon$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
-                                               class$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
-                                               on-tap="_selectDefault"
-                            ></paper-icon-button>
-                            <span class="text-center">[[ organisation.name ]]</span>
-                        </paper-icon-item>
-                    </template>
-                    </iron-selector>
-                </paper-listbox>
-            </paper-dropdown-menu>
+                    <paper-listbox id="list"
+                                   class="dropdown-content"
+                                   slot="dropdown-content"
+                                   on-iron-select="_setSelectedOrganisation">
+                        <template is="dom-repeat"
+                                  items="[[ organisations ]]"
+                                  as="organisation">
+                            <paper-icon-item role="option" organisation="[[ organisation ]]" class="text-left">
+                                <paper-icon-button id="default-[[item.id]]"
+                                                   item-icon
+                                                   icon$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
+                                                   class$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
+                                                   on-tap="_selectDefault"
+                                ></paper-icon-button>
+                                <span class="text-center">[[ organisation.name ]]</span>
+                            </paper-icon-item>
+                        </template>
+                    </paper-listbox>
+                </paper-dropdown-menu>
+            </div>
         </div>
         <oc-authorization-api id="authApi"></oc-authorization-api>
         <oc-organisation-api id="organisationApi"></oc-organisation-api>
@@ -145,152 +148,152 @@
     </template>
 
     <script>
-        /**
-         * `oc-organisation-picker`
-         * Organistion Picker
-         *
-         * @customElement
-         * @polymer
-         * @demo demo/index.html
-         */
-        class OcOrganisationPicker extends Ordercloud.ReduxMixin(Polymer.Element) {
-            static get is() {
-                return 'oc-organisation-picker';
-            }
+		/**
+		 * `oc-organisation-picker`
+		 * Organistion Picker
+		 *
+		 * @customElement
+		 * @polymer
+		 * @demo demo/index.html
+		 */
+		class OcOrganisationPicker extends Ordercloud.ReduxMixin(Polymer.Element) {
+			static get is() {
+				return 'oc-organisation-picker';
+			}
 
-            static get properties() {
-                return {
-                    /**
-                     * The permissions used to determine the list of organisations.
-                     */
-                    permission: String,
-                    /**
-                     * The selected organisation
-                     */
-                    selectedOrganisation: {
-                        type: Number,
-                        statePath: 'organisation.id'
-                    },
-                    /**
-                     * The default organisation ID
-                     */
-                    _defaultOrganisationId: Number,
-                    /**
-                     * flag if the user has been signed in
-                     */
-                    _signedIn: {
-                        type: Boolean,
-                        statePath: 'identity.loggedIn',
-                        observer: '_loadOrganisations'
-                    },
-                    /**
-                     * The list of organisations the user can choose from
-                     */
-                    organisations: {
-                        type: Array,
-                        notify: true
-                    },
+			static get properties() {
+				return {
+					/**
+					 * The permissions used to determine the list of organisations.
+					 */
+					permission: String,
+					/**
+					 * The selected organisation
+					 */
+					selectedOrganisation: {
+						type: Number,
+						statePath: 'organisation.id'
+					},
+					/**
+					 * The default organisation ID
+					 */
+					_defaultOrganisationId: Number,
+					/**
+					 * flag if the user has been signed in
+					 */
+					_signedIn: {
+						type: Boolean,
+						statePath: 'identity.loggedIn',
+						observer: '_loadOrganisations'
+					},
+					/**
+					 * The list of organisations the user can choose from
+					 */
+					organisations: {
+						type: Array,
+						notify: true
+					},
 
-                    isLoading: {
-                        type: Boolean,
-                        notify: true
-                    }
-                };
-            }
+					isLoading: {
+						type: Boolean,
+						notify: true
+					}
+				};
+			}
 
-            static get observers() {
-                return [
-                    '_initSelectedOrganisation(organisations.*)',
-                ]
-            }
+			static get observers() {
+				return [
+					'_initSelectedOrganisation(organisations.*)',
+				]
+			}
 
-            ready() {
-                super.ready();
-            }
+			ready() {
+				super.ready();
+			}
 
-            /**
-             * Load the organisations where the current user has the given permission.
-             * @param {String} permission
-             */
-            _loadOrganisations(signedIn) {
+			/**
+			 * Load the organisations where the current user has the given permission.
+			 * @param {String} permission
+			 */
+			_loadOrganisations(signedIn) {
 
-                if (!signedIn) {
-                    this.organisations = null;
-                    return;
-                }
+				if (!signedIn) {
+					this.organisations = null;
+					return;
+				}
 
-                let permission = 'bWFuYWdlbWVudF9jb25zb2xlOnZpZXc6b3JnYW5pc2F0aW9u';
+				let permission = 'bWFuYWdlbWVudF9jb25zb2xlOnZpZXc6b3JnYW5pc2F0aW9u';
 
-                this.$.authApi.getOrganisations(permission)
-                    .then(function (request) {
-                        this.organisations = request.response.results
-                            .sort(function (a, b) {
-                                let nameA = a.name.toUpperCase(); // ignore upper and lowercase
-                                let nameB = b.name.toUpperCase();
+				this.$.authApi.getOrganisations(permission)
+					.then(function (request) {
+						this.organisations = request.response.results
+							.sort(function (a, b) {
+								let nameA = a.name.toUpperCase(); // ignore upper and lowercase
+								let nameB = b.name.toUpperCase();
 
-                                if (nameA < nameB) {
-                                    return -1;
-                                }
-                                if (nameA > nameB) {
-                                    return 1;
-                                }
-                                return 0;
-                            });
+								if (nameA < nameB) {
+									return -1;
+								}
+								if (nameA > nameB) {
+									return 1;
+								}
+								return 0;
+							});
 
-                        if(request.response.count === 0){
-                            this.dispatch('receiveNoOrganisation');
-                        }
+						if(request.response.count === 0){
+							this.dispatch('receiveNoOrganisation');
+						}
 
-                    }.bind(this))
-                    .catch(function () {
-                        this.errorMessage = 'Failed to load organisations';
-                    }.bind(this));
+					}.bind(this))
+					.catch(function () {
+						this.errorMessage = 'Failed to load organisations';
+					}.bind(this));
 
 
-            }
+			}
 
-            _loadDefaultOrganisation() {
-                this._defaultId = this._defaultOrganisationId ? Number(this._defaultOrganisationId) : null;
-            }
+			_loadDefaultOrganisation() {
+				this._defaultId = this._defaultOrganisationId ? Number(this._defaultOrganisationId) : null;
+			}
 
-            _initSelectedOrganisation(organisations) {
-                if (!organisations.base || organisations.base.length === 0) {
-                    this.errorMessage = 'No organisations';
-                    return;
-                }
+			_initSelectedOrganisation(organisations) {
+				if (!organisations.base || organisations.base.length === 0) {
+					this.errorMessage = 'No organisations';
+					return;
+				}
 
-                var selectedIndex = organisations.base.findIndex(function (organisation) {
-                    return organisation.id === this._defaultId;
-                }, this);
-                this.$.list.selectIndex(selectedIndex > 0 ? selectedIndex : 0);
-            }
+				var selectedIndex = organisations.base.findIndex(function (organisation) {
+					return organisation.id === this._defaultId;
+				}, this);
+				this.$.list.selectIndex(selectedIndex > 0 ? selectedIndex : 0);
+			}
 
-            _calculateIcon(organisation, defaultOrganisationId) {
-                return organisation.id === defaultOrganisationId ? "star" : "star-border";
-            }
+			_calculateIcon(organisation, defaultOrganisationId) {
+				return organisation.id === defaultOrganisationId ? "star" : "star-border";
+			}
 
-            _selectDefault(event) {
-                //unset the default if alleady set
-                if (this._defaultOrganisationId === event.model.organisation.id) {
-                    this._defaultOrganisationId = this._defaultId = null;
-                }else {
-                    this._defaultOrganisationId = this._defaultId = event.model.organisation.id;
-                }
-                event.stopPropagation();
-            }
+			_selectDefault(event) {
+				//unset the default if alleady set
+				if (this._defaultOrganisationId === event.model.organisation.id) {
+					this._defaultOrganisationId = this._defaultId = null;
+				}else {
+					this._defaultOrganisationId = this._defaultId = event.model.organisation.id;
+				}
+				event.stopPropagation();
+			}
 
-            _setSelectedOrganisation(event, detail) {
-                this.isLoading = true;
-                Promise.all([
-                    this.dispatch('fetchClientIdIfNeeded', detail.item.organisation.id),
-                    this.dispatch('fetchOrganisationIfNeeded', detail.item.organisation.id),
-                    this.dispatch('invalidateAccounts')
-                ])
-                    .then(() => this.dispatch('fetchAccountsIfNeeded', detail.item.organisation.id));
-                this.isLoading = false;
-            }
-        }
+			_setSelectedOrganisation(event, detail) {
+				this.isLoading = true;
+				Promise.all([
+					this.dispatch('fetchClientIdIfNeeded', detail.item.organisation.id),
+					this.dispatch('fetchOrganisationIfNeeded', detail.item.organisation.id),
+					this.dispatch('invalidateAccounts')
+				])
+					.then(() => this.dispatch('fetchAccountsIfNeeded', detail.item.organisation.id));
+				this.isLoading = false;
+			}
+		}
 
-        window.customElements.define(OcOrganisationPicker.is, OcOrganisationPicker);
+		window.customElements.define(OcOrganisationPicker.is, OcOrganisationPicker);
     </script>
 </dom-module>
