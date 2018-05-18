@@ -179,8 +179,8 @@
                      * flag if the user has been signed in
                      */
                     _signedIn: {
-                        type: Boolean,
-                        statePath: 'identity.loggedIn',
+                        type: String,
+                        statePath: 'identity.token',
                         observer: '_loadOrganisations'
                     },
                     /**
@@ -210,11 +210,11 @@
 
             /**
              * Load the organisations where the current user has the given permission.
-             * @param {String} permission
+             * @param {String} signedIn
              */
             _loadOrganisations(signedIn) {
 
-                if (!signedIn) {
+                if (signedIn === null) {
                     this.organisations = null;
                     return;
                 }
