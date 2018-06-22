@@ -23,7 +23,6 @@
         <custom-style>
             <style>
                 :host {
-                    --primary-text-color: #ffffff;
                     --paper-input-container-input: {
                         font-size: 14px !important;
                         font-weight: 500 !important;
@@ -45,18 +44,15 @@
                 }
 
                 paper-dropdown-menu {
-                    width: calc(100% - 40px);
-                    padding-left: 40px;
+                    width: calc(100% - 38px);
+                }
+
+                paper-icon-item {
+                    display: block !important;
                 }
 
                 paper-icon-item {
                     display: block;
-                }
-
-                paper-icon-item.iron-selected,
-                paper-icon-item:hover {
-                    background: #635548;
-                    color: white;
                 }
 
                 a {
@@ -64,8 +60,7 @@
                 }
 
                 .picker-container {
-                    margin: -12px 22px;
-
+                    margin-left:8px;
                 }
 
                 .add-button a {
@@ -82,7 +77,6 @@
 
                 .dropdown-content {
                     color: #fff !important;
-                    background: #3d332a;
                 }
 
                 .star {
@@ -94,8 +88,8 @@
                 }
 
                 .store-icon {
-                    top: 32px;
                     color: #fff;
+                    margin-right:5px;
                 }
 
             </style>
@@ -108,7 +102,7 @@
                 on-iron-localstorage-load="_loadDefaultOrganisation"
                 on-iron-localstorage-load-empty="_loadDefaultOrganisation"
         ></iron-localstorage>
-        <div class="picker-container">
+        <div class="picker-container app-menu-item">
             <iron-icon icon="icons:store" class="store-icon"></iron-icon>
             <paper-dropdown-menu
                     id="dropdown"
@@ -125,14 +119,14 @@
                     <template is="dom-repeat"
                               items="[[ organisations ]]"
                               as="organisation">
-                        <paper-icon-item role="option" organisation="[[ organisation ]]" class="text-left">
+                        <paper-icon-item role="option" organisation="[[ organisation ]]">
                             <paper-icon-button id="default-[[item.id]]"
                                                item-icon
                                                icon$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
                                                class$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
                                                on-tap="_selectDefault"
                             ></paper-icon-button>
-                            <span class="text-center">[[ organisation.name ]]</span>
+                            <span>[[ organisation.name ]]</span>
                         </paper-icon-item>
                     </template>
                     </iron-selector>
