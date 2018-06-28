@@ -276,7 +276,11 @@
 					this.dispatch('fetchOrganisationIfNeeded', detail.item.organisation.id),
 					this.dispatch('invalidateAccounts')
 				])
-					.then(() => this.dispatch('fetchAccountsIfNeeded', detail.item.organisation.id));
+					.then(() => this.dispatch('fetchAccountsIfNeeded', detail.item.organisation.id))
+                    .catch((error) =>  {
+                        console.log("Failed to load accounts", error);
+                        Raven.captureException(JSON.stringify(error));
+                    } );
 				this.isLoading = false;
 			}
 		}
