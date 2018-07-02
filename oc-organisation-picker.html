@@ -4,12 +4,14 @@
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 
 <link rel="import" href="../paper-item/paper-icon-item.html">
+<link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 
 <!-- Ensure Web Animations polyfill is loaded since neon-animation 2.0 doesn't import it -->
 <link rel="import" href="../neon-animation/web-animations.html">
 
 <link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-input/iron-input.html">
 <link rel="import" href="../iron-iconset-svg/iron-iconset-svg.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icons/communication-icons.html">
@@ -20,84 +22,94 @@
 
 <dom-module id="oc-organisation-picker">
     <template>
-        <custom-style>
-            <style>
-                :host {
-                    --paper-input-container-input: {
-                        font-size: 14px !important;
-                        font-weight: 500 !important;
-                    };
+        <style>
+            :host {
+                --paper-input-container-input: {
+                    font-size: 14px !important;
+                    font-weight: 500 !important;
+                };
 
-                    --paper-input-container-shared-input-style:{ color:#fff;};
-
-                    display: block;
-
-                    --paper-input-container-underline: {
-                        display: none;
-                    };
-                    --paper-input-container-underline-focus: {
-                        display: none;
-                    };
-                    --paper-input-container-underline-disabled: {
-                        display: none;
-                    };
-                }
-
-                paper-dropdown-menu {
-                    width: calc(100% - 38px);
-                }
-
-                paper-icon-item {
-                    display: block !important;
-                }
-
-                a {
-                    text-decoration: none;
-                }
-
-                .picker-container {
-                    margin-left:8px;
-                }
-
-                .add-button a {
+                --paper-input-container-shared-input-style: {
                     color: #fff;
-                }
+                };
 
-                .text-center {
-                    text-align: center;
-                }
+                display: block;
 
-                .text-left {
-                    text-align: left;
-                }
+                --paper-input-container-underline: {
+                    display: none;
+                };
+                --paper-input-container-underline-focus: {
+                    display: none;
+                };
+                --paper-input-container-underline-disabled: {
+                    display: none;
+                };
+            }
 
-                .dropdown-content {
-                    color: #fff !important;
-                }
+            paper-dropdown-menu {
+                width: calc(100% - 38px);
+            }
 
-                .star {
-                    color: #e0992f;
-                }
+            paper-icon-item {
+                display: block;
+            }
 
-                .start-border {
-                    color: #e0992f !important;
-                }
+            a {
+                text-decoration: none;
+            }
 
-                .store-icon {
-                    color: #fff;
-                    margin-right:5px;
-                }
+            .picker-container {
+                margin-left: 8px;
+            }
 
-            </style>
-        </custom-style>
+            .add-button a {
+                color: #fff;
+            }
 
+            paper-listbox {
+                color: #fff !important;
+                display: contents;
+            }
+
+            .star {
+                color: #e0992f;
+            }
+
+            .start-border {
+                color: #e0992f !important;
+            }
+
+            .store-icon {
+                color: #fff;
+                margin-right: 5px;
+            }
+
+            /* Following css is for the search filter */
+            paper-item {
+                padding-left: 0;
+            }
+
+            iron-input {
+                width: 100%;
+            }
+
+            .search-input {
+                box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(0, 0, 0, 0.14), 0 0 0 0 rgba(0, 0, 0, 0.12);
+                padding: 0 2px 0 16px;
+                border: none;
+                width: 100%;
+                height: 40px;
+                line-height: 48px;
+            }
+        </style>
+
+        <!-- Gets the default organisation out of local storage -->
         <iron-localstorage
                 use-raw
                 name="oc-organisation-picker-default"
-                value="{{_defaultOrganisationId }}"
-                on-iron-localstorage-load="_loadDefaultOrganisation"
-                on-iron-localstorage-load-empty="_loadDefaultOrganisation"
+                value="{{_defaultOrganisationId}}"
         ></iron-localstorage>
+
         <div class="picker-container app-menu-item">
             <iron-icon icon="icons:store" class="store-icon"></iron-icon>
             <paper-dropdown-menu
@@ -108,16 +120,21 @@
                     error-message="[[ errorMessage ]]"
             >
 
-                <paper-listbox id="list"
-                               class="dropdown-content"
-                               slot="dropdown-content"
-                               on-iron-select="_setSelectedOrganisation">
+                <paper-listbox id="list" slot="dropdown-content" on-iron-select="_onDropdownItemSelect">
+                    <paper-item id="search">
+                        <iron-input bind-value="{{_searchText}}">
+                            <input class="search-input"
+                                   on-tap="_stopEventPropagation"
+                                   on-keydown="_stopEventPropagation"
+                                   on-keyup="_stopEventPropagation"
+                                   placeholder="Search..." type="text">
+                        </iron-input>
+                    </paper-item>
                     <template is="dom-repeat"
                               items="[[ organisations ]]"
                               as="organisation">
                         <paper-icon-item role="option" organisation="[[ organisation ]]">
-                            <paper-icon-button id="default-[[item.id]]"
-                                               item-icon
+                            <paper-icon-button item-icon
                                                icon$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
                                                class$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
                                                on-tap="_selectDefault"
@@ -125,7 +142,6 @@
                             <span>[[ organisation.name ]]</span>
                         </paper-icon-item>
                     </template>
-                    </iron-selector>
                 </paper-listbox>
             </paper-dropdown-menu>
         </div>
@@ -135,14 +151,6 @@
     </template>
 
     <script>
-		/**
-		 * `oc-organisation-picker`
-		 * Organistion Picker
-		 *
-		 * @customElement
-		 * @polymer
-		 * @demo demo/index.html
-		 */
 		class OcOrganisationPicker extends Ordercloud.ReduxMixin(Polymer.Element) {
 			static get is() {
 				return 'oc-organisation-picker';
@@ -151,20 +159,12 @@
 			static get properties() {
 				return {
 					/**
-					 * The permissions used to determine the list of organisations.
-					 */
-					permission: String,
-					/**
-					 * The selected organisation
-					 */
-					selectedOrganisation: {
-						type: Number,
-						statePath: 'organisation.id'
-					},
-					/**
 					 * The default organisation ID
 					 */
-					_defaultOrganisationId: Number,
+					_defaultOrganisationId: {
+						type: Number,
+						observer: '_dispatchSelectedOrganisation'
+					},
 					/**
 					 * flag if the user has been signed in
 					 */
@@ -184,18 +184,31 @@
 					isLoading: {
 						type: Boolean,
 						notify: true
+					},
+
+					_searchText: {
+						type: String,
+						observer: '_filter'
 					}
 				};
 			}
 
 			static get observers() {
 				return [
-					'_initSelectedOrganisation(organisations.*)',
+					'_setSelectedOrganisation(organisations.*)',
 				]
 			}
 
 			ready() {
 				super.ready();
+			}
+
+			/* Stop events for dropdown except for arrow up and down. This will make it possible
+			* for the user the click on the search input without closing the dropdown */
+			_stopEventPropagation(e) {
+				if (e.keyCode !== 40 && e.keyCode !== 38) {
+					e.stopPropagation();
+				}
 			}
 
 			/**
@@ -212,47 +225,39 @@
 				let permission = 'bWFuYWdlbWVudF9jb25zb2xlOnZpZXc6b3JnYW5pc2F0aW9u';
 
 				this.$.authApi.getOrganisations(permission)
-					.then(function (request) {
+					.then((request) => {
 						this.organisations = request.response.results
 							.sort(function (a, b) {
-								let nameA = a.name.toUpperCase(); // ignore upper and lowercase
+								let nameA = a.name.toUpperCase();
 								let nameB = b.name.toUpperCase();
 
-								if (nameA < nameB) {
-									return -1;
-								}
-								if (nameA > nameB) {
-									return 1;
-								}
+								if (nameA < nameB) return -1;
+								if (nameA > nameB) return 1;
 								return 0;
 							});
 
-						if(request.response.count === 0){
+						if (request.response.count === 0) {
 							this.dispatch('receiveNoOrganisation');
 						}
-
-					}.bind(this))
-					.catch(function () {
+					})
+					.catch((error) => {
+						Raven.captureException(JSON.stringify(error));
 						this.errorMessage = 'Failed to load organisations';
-					}.bind(this));
-
-
+					});
 			}
 
-			_loadDefaultOrganisation() {
-				this._defaultId = this._defaultOrganisationId ? Number(this._defaultOrganisationId) : null;
-			}
-
-			_initSelectedOrganisation(organisations) {
+			_setSelectedOrganisation(organisations) {
 				if (!organisations.base || organisations.base.length === 0) {
 					this.errorMessage = 'No organisations';
 					return;
 				}
 
-				var selectedIndex = organisations.base.findIndex(function (organisation) {
-					return organisation.id === this._defaultId;
-				}, this);
-				this.$.list.selectIndex(selectedIndex > 0 ? selectedIndex : 0);
+				const selectedIndex = organisations.base.findIndex((organisation) => {
+					return organisation.id === Number(this._defaultOrganisationId);
+				});
+
+				/* If there is no default value select the */
+				this.$.list.selectIndex(selectedIndex > 0 ? selectedIndex + 1 : 1);
 			}
 
 			_calculateIcon(organisation, defaultOrganisationId) {
@@ -262,22 +267,56 @@
 			_selectDefault(event) {
 				//unset the default if alleady set
 				if (this._defaultOrganisationId === event.model.organisation.id) {
-					this._defaultOrganisationId = this._defaultId = null;
-				}else {
-					this._defaultOrganisationId = this._defaultId = event.model.organisation.id;
+					this._defaultOrganisationId = null;
+				} else {
+					this._defaultOrganisationId = event.model.organisation.id;
 				}
 				event.stopPropagation();
 			}
 
-			_setSelectedOrganisation(event, detail) {
+			_onDropdownItemSelect(event) {
+				this._dispatchSelectedOrganisation(event.detail.item.organisation.id);
+				this._searchText = ""; // Dropdown width break if search text does not reset
+			}
+
+			_dispatchSelectedOrganisation(id) {
+				if (!id) return;
 				this.isLoading = true;
 				Promise.all([
-					this.dispatch('fetchClientIdIfNeeded', detail.item.organisation.id),
-					this.dispatch('fetchOrganisationIfNeeded', detail.item.organisation.id),
+					this.dispatch('fetchClientIdIfNeeded', id),
+					this.dispatch('fetchOrganisationIfNeeded', id),
 					this.dispatch('invalidateAccounts')
 				])
-					.then(() => this.dispatch('fetchAccountsIfNeeded', detail.item.organisation.id));
+					.then(() => this.dispatch('fetchAccountsIfNeeded', id))
+					.catch((error) => {
+						console.log("Failed to load accounts", error);
+						Raven.captureException(JSON.stringify(error));
+					});
 				this.isLoading = false;
+			}
+
+			_filterCheck(searchText, item) {
+				if (item.id === "search") return true; // Skip search input
+				const currentValue = item.__templatizeInstance.organisation.name;
+				if (searchText === "" || currentValue === "") {
+					return true;
+				} else {
+					const re = new RegExp(searchText, "gi");
+					return re.exec(currentValue) != null;
+				}
+			}
+
+			_filter(searchText) {
+				const items = this.$.list.items;
+				items.forEach(item => {
+					let display;
+					if (this._filterCheck(searchText, item)) {
+						display = 'block';
+					} else {
+						display = 'none';
+					}
+					item.style.display = display;
+				});
 			}
 		}
 
