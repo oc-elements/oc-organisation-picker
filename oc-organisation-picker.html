@@ -241,8 +241,14 @@
 					return organisation.id === Number(this._defaultOrganisationId);
 				});
 
-				/* If there is no default value select the */
-				this.$.list.selectIndex(selectedIndex > 0 ? selectedIndex + 1 : 1);
+				if (selectedIndex !== -1) {
+					this.$.list.selectIndex(selectedIndex > 0 ? selectedIndex + 1 : 1);
+				}
+				else {
+					// This code assumes that there will always atleast be one organisation.
+					this.$.list.selectIndex(1);
+					this._dispatchSelectedOrganisation(organisations.base[0].id);
+				}
 			}
 
 			_calculateIcon(organisation, defaultOrganisationId) {
