@@ -111,7 +111,8 @@
 
 		<div class="picker-container app-menu-item">
 			<iron-icon icon="icons:store" class="store-icon"></iron-icon>
-			<paper-dropdown-menu id="dropdown" no-label-float disabled$="[[ !organisations ]]" invalid$="[[ errorMessage ]]" error-message="[[ errorMessage ]]">
+			<paper-dropdown-menu id="dropdown" no-label-float disabled$="[[ !organisations ]]" invalid$="[[ errorMessage ]]" error-message="[[ errorMessage ]]"
+			 on-tap="onPickerClick">
 
 				<paper-listbox id="list" slot="dropdown-content">
 					<paper-item id="search">
@@ -186,6 +187,13 @@
 
 			ready() {
 				super.ready();
+			}
+
+			onPickerClick() {
+				// Exececute at the end of the call stack after dom has rendered
+				setTimeout(() => {
+					this.$.dropdown.$.menuButton.$.dropdown.querySelector(".dropdown-content").scrollTop = 0
+				}, 0);
 			}
 
 			/* Stop events for dropdown except for arrow up and down. This will make it possible
