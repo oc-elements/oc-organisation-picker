@@ -107,7 +107,7 @@
 		</style>
 
 		<!-- Gets the default organisation out of local storage -->
-		<iron-localstorage use-raw name="oc-organisation-picker-default" value="{{_defaultOrganisationId}}"></iron-localstorage>
+		<iron-localstorage use-raw name="last-active-organisation" value="{{_defaultOrganisationId}}"></iron-localstorage>
 
 		<div class="picker-container app-menu-item">
 			<iron-icon icon="icons:store" class="store-icon"></iron-icon>
@@ -122,17 +122,14 @@
 						</iron-input>
 					</paper-item>
 					<template is="dom-repeat" items="[[ organisations ]]" as="organisation">
-						<paper-icon-item role="option" organisation="[[ organisation ]]" on-tap="_onDropdownItemSelect">
-							<paper-icon-button item-icon icon$="[[_calculateIcon(organisation, _defaultOrganisationId)]]" class$="[[_calculateIcon(organisation, _defaultOrganisationId)]]"
-							 on-tap="_selectDefault"></paper-icon-button>
+						<paper-item role="option" organisation="[[ organisation ]]" on-tap="_onDropdownItemSelect" style="margin-left: 15px">
 							<span>[[ organisation.name ]]</span>
-						</paper-icon-item>
+						</paper-item>
 					</template>
 				</paper-listbox>
 			</paper-dropdown-menu>
 		</div>
 		<oc-authorization-api id="authApi"></oc-authorization-api>
-		<oc-organisation-api id="organisationApi"></oc-organisation-api>
 
 	</template>
 
@@ -259,20 +256,6 @@
 				}
 			}
 
-			_calculateIcon(organisation, defaultOrganisationId) {
-				return organisation.id === defaultOrganisationId ? "star" : "star-border";
-			}
-
-			_selectDefault(event) {
-				//unset the default if alleady set
-				if (this._defaultOrganisationId === event.model.organisation.id) {
-					this._defaultOrganisationId = null;
-				} else {
-					this._defaultOrganisationId = event.model.organisation.id;
-				}
-				event.stopPropagation();
-			}
-
 			_onDropdownItemSelect(event) {
 				this._dispatchSelectedOrganisation(event.model.organisation.id);
 				this.dispatchEvent(new CustomEvent('change-page', {
@@ -283,6 +266,7 @@
 
 			_dispatchSelectedOrganisation(id) {
 				if (!id) return;
+				this._defaultOrganisationId = id;
 				this.isLoading = true;
 				Promise.all([
 					this.dispatch('fetchClientIdIfNeeded', id),
