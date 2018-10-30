@@ -46,9 +46,6 @@
 				--paper-input-container-underline-disabled: {
 					display: none;
 				}
-				background: #3d4b59;
-				margin-top:-11px;
-				width:100%;
 			}
 
 			paper-dropdown-menu {
@@ -113,14 +110,15 @@
 		<iron-localstorage use-raw name="last-active-organisation" value="{{_defaultOrganisationId}}"></iron-localstorage>
 
 		<div class="picker-container app-menu-item">
+			<iron-icon icon="icons:store" class="store-icon"></iron-icon>
 			<paper-dropdown-menu id="dropdown" no-label-float disabled$="[[ !organisations ]]" invalid$="[[ errorMessage ]]" error-message="[[ errorMessage ]]"
-								 on-tap="onPickerClick">
+			 on-tap="onPickerClick">
 
 				<paper-listbox id="list" slot="dropdown-content">
 					<paper-item id="search">
 						<iron-input bind-value="{{_searchText}}">
 							<input class="search-input" on-tap="_stopEventPropagation" on-keydown="_stopEventPropagation" on-keyup="_stopEventPropagation"
-								   placeholder="Search..." type="text">
+							 placeholder="Search..." type="text">
 						</iron-input>
 					</paper-item>
 					<template is="dom-repeat" items="[[ organisations ]]" as="organisation">
@@ -136,178 +134,178 @@
 	</template>
 
 	<script>
-        class OcOrganisationPicker extends Ordercloud.ReduxMixin(Polymer.Element) {
-            static get is() {
-                return 'oc-organisation-picker';
-            }
+		class OcOrganisationPicker extends Ordercloud.ReduxMixin(Polymer.Element) {
+			static get is() {
+				return 'oc-organisation-picker';
+			}
 
-            static get properties() {
-                return {
-                    /**
-                     * The default organisation ID
-                     */
-                    _defaultOrganisationId: {
-                        type: Number,
-                        observer: '_dispatchSelectedOrganisation'
-                    },
-                    /**
-                     * flag if the user has been signed in
-                     */
-                    _signedIn: {
-                        type: String,
-                        statePath: 'identity.token',
-                        observer: '_loadOrganisations'
-                    },
-                    /**
-                     * The list of organisations the user can choose from
-                     */
-                    organisations: {
-                        type: Array,
-                        notify: true
-                    },
+			static get properties() {
+				return {
+					/**
+					 * The default organisation ID
+					 */
+					_defaultOrganisationId: {
+						type: Number,
+						observer: '_dispatchSelectedOrganisation'
+					},
+					/**
+					 * flag if the user has been signed in
+					 */
+					_signedIn: {
+						type: String,
+						statePath: 'identity.token',
+						observer: '_loadOrganisations'
+					},
+					/**
+					 * The list of organisations the user can choose from
+					 */
+					organisations: {
+						type: Array,
+						notify: true
+					},
 
-                    isLoading: {
-                        type: Boolean,
-                        notify: true
-                    },
+					isLoading: {
+						type: Boolean,
+						notify: true
+					},
 
-                    _searchText: {
-                        type: String,
-                        observer: '_filter'
-                    }
-                };
-            }
+					_searchText: {
+						type: String,
+						observer: '_filter'
+					}
+				};
+			}
 
-            static get observers() {
-                return [
-                    '_setSelectedOrganisation(organisations.*)',
-                ]
-            }
+			static get observers() {
+				return [
+					'_setSelectedOrganisation(organisations.*)',
+				]
+			}
 
-            ready() {
-                super.ready();
-            }
+			ready() {
+				super.ready();
+			}
 
-            onPickerClick() {
-                // Exececute at the end of the call stack after dom has rendered
-                setTimeout(() => {
-                    this.$.dropdown.$.menuButton.$.dropdown.querySelector(".dropdown-content").scrollTop = 0
-            }, 0);
-            }
+			onPickerClick() {
+				// Exececute at the end of the call stack after dom has rendered
+				setTimeout(() => {
+					this.$.dropdown.$.menuButton.$.dropdown.querySelector(".dropdown-content").scrollTop = 0
+				}, 0);
+			}
 
-            /* Stop events for dropdown except for arrow up and down. This will make it possible
-            * for the user the click on the search input without closing the dropdown */
-            _stopEventPropagation(e) {
-                if (e.keyCode !== 40 && e.keyCode !== 38) {
-                    e.stopPropagation();
-                }
-            }
+			/* Stop events for dropdown except for arrow up and down. This will make it possible
+			* for the user the click on the search input without closing the dropdown */
+			_stopEventPropagation(e) {
+				if (e.keyCode !== 40 && e.keyCode !== 38) {
+					e.stopPropagation();
+				}
+			}
 
-            /**
-             * Load the organisations where the current user has the given permission.
-             * @param {String} signedIn
-             */
-            _loadOrganisations(signedIn) {
+			/**
+			 * Load the organisations where the current user has the given permission.
+			 * @param {String} signedIn
+			 */
+			_loadOrganisations(signedIn) {
 
-                if (signedIn === null) {
-                    this.organisations = null;
-                    return;
-                }
+				if (signedIn === null) {
+					this.organisations = null;
+					return;
+				}
 
-                let permission = 'bWFuYWdlbWVudF9jb25zb2xlOnZpZXc6b3JnYW5pc2F0aW9u';
+				let permission = 'bWFuYWdlbWVudF9jb25zb2xlOnZpZXc6b3JnYW5pc2F0aW9u';
 
-                this.$.authApi.getOrganisations(permission)
-                    .then((request) => {
-                    this.organisations = request.response.results
-                    .sort(function (a, b) {
-                        let nameA = a.name.toUpperCase();
-                        let nameB = b.name.toUpperCase();
+				this.$.authApi.getOrganisations(permission)
+					.then((request) => {
+						this.organisations = request.response.results
+							.sort(function (a, b) {
+								let nameA = a.name.toUpperCase();
+								let nameB = b.name.toUpperCase();
 
-                        if (nameA < nameB) return -1;
-                        if (nameA > nameB) return 1;
-                        return 0;
-                    });
+								if (nameA < nameB) return -1;
+								if (nameA > nameB) return 1;
+								return 0;
+							});
 
-                if (request.response.count === 0) {
-                    this.dispatch('receiveNoOrganisation');
-                }
-            })
-            .catch((error) => {
-                    Raven.captureException(JSON.stringify(error));
-                this.errorMessage = 'Failed to load organisations';
-            });
-            }
+						if (request.response.count === 0) {
+							this.dispatch('receiveNoOrganisation');
+						}
+					})
+					.catch((error) => {
+						Raven.captureException(JSON.stringify(error));
+						this.errorMessage = 'Failed to load organisations';
+					});
+			}
 
-            _setSelectedOrganisation(organisations) {
-                if (!organisations.base || organisations.base.length === 0) {
-                    this.errorMessage = 'No organisations';
-                    return;
-                }
+			_setSelectedOrganisation(organisations) {
+				if (!organisations.base || organisations.base.length === 0) {
+					this.errorMessage = 'No organisations';
+					return;
+				}
 
-                const selectedIndex = organisations.base.findIndex((organisation) => {
-                    return organisation.id === Number(this._defaultOrganisationId);
-            });
+				const selectedIndex = organisations.base.findIndex((organisation) => {
+					return organisation.id === Number(this._defaultOrganisationId);
+				});
 
-                if (selectedIndex !== -1) {
-                    this.$.list.selectIndex(selectedIndex > 0 ? selectedIndex + 1 : 1);
-                }
-                else {
-                    // This code assumes that there will always atleast be one organisation.
-                    this.$.list.selectIndex(1);
-                    this._dispatchSelectedOrganisation(organisations.base[0].id);
-                }
-            }
+				if (selectedIndex !== -1) {
+					this.$.list.selectIndex(selectedIndex > 0 ? selectedIndex + 1 : 1);
+				}
+				else {
+					// This code assumes that there will always atleast be one organisation.
+					this.$.list.selectIndex(1);
+					this._dispatchSelectedOrganisation(organisations.base[0].id);
+				}
+			}
 
-            _onDropdownItemSelect(event) {
-                this._dispatchSelectedOrganisation(event.model.organisation.id);
-                this.dispatchEvent(new CustomEvent('change-page', {
-                    bubbles: true, composed: true, detail: { url: '/' }
-                }));
-                this._searchText = ""; // Dropdown width break if search text does not reset
-            }
+			_onDropdownItemSelect(event) {
+				this._dispatchSelectedOrganisation(event.model.organisation.id);
+				this.dispatchEvent(new CustomEvent('change-page', {
+					bubbles: true, composed: true, detail: { url: '/' }
+				}));
+				this._searchText = ""; // Dropdown width break if search text does not reset
+			}
 
-            _dispatchSelectedOrganisation(id) {
-                if (!id) return;
-                this._defaultOrganisationId = id;
-                this.isLoading = true;
-                Promise.all([
-                    this.dispatch('fetchClientIdIfNeeded', id),
-                    this.dispatch('fetchOrganisationIfNeeded', id),
-                    this.dispatch('invalidateAccounts')
-                ])
-                    .then(() => this.dispatch('fetchAccountsIfNeeded', id))
-            .catch((error) => {
-                    console.log("Failed to load accounts", error);
-                Raven.captureException(JSON.stringify(error));
-            });
-                this.isLoading = false;
-            }
+			_dispatchSelectedOrganisation(id) {
+				if (!id) return;
+				this._defaultOrganisationId = id;
+				this.isLoading = true;
+				Promise.all([
+					this.dispatch('fetchClientIdIfNeeded', id),
+					this.dispatch('fetchOrganisationIfNeeded', id),
+					this.dispatch('invalidateAccounts')
+				])
+					.then(() => this.dispatch('fetchAccountsIfNeeded', id))
+					.catch((error) => {
+						console.log("Failed to load accounts", error);
+						Raven.captureException(JSON.stringify(error));
+					});
+				this.isLoading = false;
+			}
 
-            _filterCheck(searchText, item) {
-                if (item.id === "search") return true; // Skip search input
-                const currentValue = item.__templatizeInstance.organisation.name;
-                if (searchText === "" || currentValue === "") {
-                    return true;
-                } else {
-                    const re = new RegExp(searchText, "gi");
-                    return re.exec(currentValue) != null;
-                }
-            }
+			_filterCheck(searchText, item) {
+				if (item.id === "search") return true; // Skip search input
+				const currentValue = item.__templatizeInstance.organisation.name;
+				if (searchText === "" || currentValue === "") {
+					return true;
+				} else {
+					const re = new RegExp(searchText, "gi");
+					return re.exec(currentValue) != null;
+				}
+			}
 
-            _filter(searchText) {
-                const items = this.$.list.items;
-                items.forEach(item => {
-                    let display;
-                if (this._filterCheck(searchText, item)) {
-                    display = 'block';
-                } else {
-                    display = 'none';
-                }
-                item.style.display = display;
-            });
-            }
-        }
+			_filter(searchText) {
+				const items = this.$.list.items;
+				items.forEach(item => {
+					let display;
+					if (this._filterCheck(searchText, item)) {
+						display = 'block';
+					} else {
+						display = 'none';
+					}
+					item.style.display = display;
+				});
+			}
+		}
 
-        window.customElements.define(OcOrganisationPicker.is, OcOrganisationPicker);
+		window.customElements.define(OcOrganisationPicker.is, OcOrganisationPicker);
 	</script>
 </dom-module>
