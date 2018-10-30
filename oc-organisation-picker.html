@@ -46,6 +46,9 @@
 				--paper-input-container-underline-disabled: {
 					display: none;
 				}
+				background: #3d4b59;
+				margin-top:-11px;
+				width:100%;
 			}
 
 			paper-dropdown-menu {
@@ -110,7 +113,6 @@
 		<iron-localstorage use-raw name="last-active-organisation" value="{{_defaultOrganisationId}}"></iron-localstorage>
 
 		<div class="picker-container app-menu-item">
-			<iron-icon icon="icons:store" class="store-icon"></iron-icon>
 			<paper-dropdown-menu id="dropdown" no-label-float disabled$="[[ !organisations ]]" invalid$="[[ errorMessage ]]" error-message="[[ errorMessage ]]"
 			 on-tap="onPickerClick">
 
