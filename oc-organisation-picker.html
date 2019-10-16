@@ -27,32 +27,44 @@
 				--paper-input-container-input: {
 					font-size: 14px !important;
 					font-weight: 500 !important;
-				}
+					width: 100% !important;
+					display: grid !important;
+				};
 
 				--paper-input-container-shared-input-style: {
 					color: #fff;
-				}
+				};
 
 				display: block;
 
 				--paper-input-container-underline: {
 					display: none;
-				}
+				};
 
 				--paper-input-container-underline-focus: {
 					display: none;
-				}
+				};
 
 				--paper-input-container-underline-disabled: {
 					display: none;
-				}
+				};
 				background: #3d4b59;
 				margin-top:-11px;
 				width:100%;
 			}
 
-			paper-dropdown-menu {
-				width: calc(100% - 38px);
+			paper-dropdown-menu.custom {
+				width: calc(100%);
+				display: grid !important;
+				--iron-input: {
+					width:100%;
+				};
+				--paper-input-container-input: {
+					color:#eeeeee;
+					width: 100% !important;
+					display: grid !important;
+					
+				};
 			}
 
 			paper-icon-item {
@@ -114,7 +126,7 @@
 
 		<div class="picker-container app-menu-item">
 			<paper-dropdown-menu id="dropdown" no-label-float disabled$="[[ !organisations ]]" invalid$="[[ errorMessage ]]" error-message="[[ errorMessage ]]"
-			 on-tap="onPickerClick">
+			 on-tap="onPickerClick" class="custom">
 
 				<paper-listbox id="list" slot="dropdown-content">
 					<paper-item id="search">
