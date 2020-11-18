@@ -1,4 +1,5 @@
 <link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="/bower_components/pushy/pushy-sdk.js">
 <link rel="import" href="../iron-localstorage/iron-localstorage.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
@@ -15,6 +16,7 @@
 <link rel="import" href="../iron-iconset-svg/iron-iconset-svg.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icons/communication-icons.html">
+
 
 
 <link rel="import" href="../oc-authorization-api/oc-authorization-api.html">
@@ -52,6 +54,9 @@
 				margin-top:-11px;
 				width:100%;
 			}
+			paper-menu {
+				width: 800px;
+			}
 
 			paper-dropdown-menu.custom {
 				width: calc(100%);
@@ -63,7 +68,7 @@
 					color:#eeeeee;
 					width: 100% !important;
 					display: grid !important;
-					
+
 				};
 			}
 
@@ -113,31 +118,51 @@
 
 			.search-input {
 				box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(0, 0, 0, 0.14), 0 0 0 0 rgba(0, 0, 0, 0.12);
-				padding: 0 2px 0 16px;
 				border: none;
 				width: 100%;
 				height: 40px;
 				line-height: 48px;
+				margin-bottom: 5px;
+			}
+
+			.block-yo {
+				display: block; width:100%;
+				padding: 0px !important;
+				margin: 0px !important;
+
 			}
 		</style>
 
 		<!-- Gets the default organisation out of local storage -->
 		<iron-localstorage use-raw name="last-active-organisation" value="{{_defaultOrganisationId}}"></iron-localstorage>
-
+		<iron-localstorage use-raw name="last-active-organisation-code" value="{{_defaultOrganisationCode}}"></iron-localstorage>
+		<oc-organisation-api id="organisationApi"></oc-organisation-api>
 		<div class="picker-container app-menu-item">
 			<paper-dropdown-menu id="dropdown" no-label-float disabled$="[[ !organisations ]]" invalid$="[[ errorMessage ]]" error-message="[[ errorMessage ]]"
 			 on-tap="onPickerClick" class="custom">
 
 				<paper-listbox id="list" slot="dropdown-content">
-					<paper-item id="search">
-						<iron-input bind-value="{{_searchText}}">
+					<paper-item id="search" style="width:calc(90vw)">
+						<iron-icon style="margin: 6px 0px 0 -4px;
+						background: orange;
+						color: #fff;
+						font-size: 13px;
+						border-radius: 5px;
+						padding: 4px 6px;
+						position: absolute;
+						right: 16px;
+						height: 26px;
+						float: right;
+						top: -1px;" icon="icons:search" on-tap="_onSearch"></iron-icon>
+						<iron-input bind-value="{{_searchText}}" class="row">
+
 							<input class="search-input" on-tap="_stopEventPropagation" on-keydown="_stopEventPropagation" on-keyup="_stopEventPropagation"
 							 placeholder="Search..." type="text">
 						</iron-input>
 					</paper-item>
 					<template is="dom-repeat" items="[[ organisations ]]" as="organisation">
-						<paper-item role="option" organisation="[[ organisation ]]" on-tap="_onDropdownItemSelect" style="margin-left: 15px">
-							<span>[[ organisation.name ]]</span>
+						<paper-item role="option" organisation="[[ organisation ]]" on-tap="_onDropdownItemSelect" class="block-yo" style=" ">
+							<span style="padding: 0 5px">[[ organisation.name ]]</span>
 						</paper-item>
 					</template>
 				</paper-listbox>
@@ -147,6 +172,7 @@
 
 	</template>
 
+	<script src="../pushy/pushy-sdk.js" charset="utf-8"></script>
 	<script>
 		class OcOrganisationPicker extends Ordercloud.ReduxMixin(Polymer.Element) {
 			static get is() {
@@ -162,6 +188,12 @@
 						type: Number,
 						observer: '_dispatchSelectedOrganisation'
 					},
+
+					// Set a default organisation code
+					_defaultOrganisationCode: {
+						type: String,
+						value: ''
+					},
 					/**
 					 * flag if the user has been signed in
 					 */
@@ -175,17 +207,37 @@
 					 */
 					organisations: {
 						type: Array,
+						value: [],
 						notify: true
+					},
+
+					_environment: {
+						type: String,
+						statePath: 'config.environment'
 					},
 
 					isLoading: {
 						type: Boolean,
 						notify: true
 					},
+					deviceToken: {
+						type: String
+					},
 
 					_searchText: {
 						type: String,
-						observer: '_filter'
+					},
+					page: {
+						type: Number,
+						value: 1
+					},
+					pagesize: {
+						type: Number,
+						value: 20
+					},
+					defaultSearchTerm: {
+						type: String,
+						value: ''
 					}
 				};
 			}
@@ -204,31 +256,41 @@
 				// Exececute at the end of the call stack after dom has rendered
 				setTimeout(() => {
 					this.$.dropdown.$.menuButton.$.dropdown.querySelector(".dropdown-content").scrollTop = 0
-				}, 0);
+				}, 1000);
 			}
 
 			/* Stop events for dropdown except for arrow up and down. This will make it possible
 			* for the user the click on the search input without closing the dropdown */
 			_stopEventPropagation(e) {
-				if (e.keyCode !== 40 && e.keyCode !== 38) {
+				//check for enter
+				 if (e.keyCode === 13) {
+                    this._onSearch();
+                }
+				else if (e.keyCode !== 40 && e.keyCode !== 38) {
 					e.stopPropagation();
 				}
+
 			}
 
 			/**
 			 * Load the organisations where the current user has the given permission.
 			 * @param {String} signedIn
 			 */
-			_loadOrganisations(signedIn) {
-
+			_loadOrganisations(signedIn, code) {
 				if (signedIn === null) {
 					this.organisations = null;
 					return;
 				}
 
-				let permission = 'bWFuYWdlbWVudF9jb25zb2xlOnZpZXc6b3JnYW5pc2F0aW9u';
+				if (localStorage.getItem('last-active-organisation-code')){
+					this._defaultOrganisationCode = localStorage.getItem('last-active-organisation-code');
+				}
+				else {
+					this._defaultOrganisationCode = '';
+				}
 
-				this.$.authApi.getOrganisations(permission)
+
+				this.$.authApi.getOrganisations(this.page, this.pagesize, this._defaultOrganisationCode)
 					.then((request) => {
 						this.organisations = request.response.results
 							.sort(function (a, b) {
@@ -250,12 +312,30 @@
 					});
 			}
 
+			_onSearch() {
+				this.organisations = [];
+				this.$.authApi.getOrganisations(this.page, this.pagesize, this._searchText)
+				.then((request) => {
+					this.set('organisations', this.organisations.concat(request.response.results));
+					if (request.response.count === 0) {
+							this.dispatch('receiveNoOrganisation');
+						}
+			})
+			}
+
+			_resetSearch() {
+				this._searchText = '';
+			}
+
 			_setSelectedOrganisation(organisations) {
 				if (!organisations.base || organisations.base.length === 0) {
 					this.errorMessage = 'No organisations';
 					return;
 				}
-
+				else if (organisations.base.length >= 1) {
+					this.errorMessage = '';
+				}
+				//old code for selecting the selected organisation
 				const selectedIndex = organisations.base.findIndex((organisation) => {
 					return organisation.id === Number(this._defaultOrganisationId);
 				});
@@ -267,6 +347,7 @@
 					// This code assumes that there will always atleast be one organisation.
 					this.$.list.selectIndex(1);
 					this._dispatchSelectedOrganisation(organisations.base[0].id);
+					this._defaultOrganisationCode = organisations.base[0].code;
 				}
 			}
 
@@ -293,30 +374,7 @@
 						Raven.captureException(JSON.stringify(error));
 					});
 				this.isLoading = false;
-			}
 
-			_filterCheck(searchText, item) {
-				if (item.id === "search") return true; // Skip search input
-				const currentValue = item.__templatizeInstance.organisation.name;
-				if (searchText === "" || currentValue === "") {
-					return true;
-				} else {
-					const re = new RegExp(searchText, "gi");
-					return re.exec(currentValue) != null;
-				}
-			}
-
-			_filter(searchText) {
-				const items = this.$.list.items;
-				items.forEach(item => {
-					let display;
-					if (this._filterCheck(searchText, item)) {
-						display = 'block';
-					} else {
-						display = 'none';
-					}
-					item.style.display = display;
-				});
 			}
 		}
 
