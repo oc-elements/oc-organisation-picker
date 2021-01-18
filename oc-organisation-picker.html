@@ -310,14 +310,17 @@
 			}
 
 			_onSearch() {
+				//the organisation list is cleared with only the first item/default organisation being concatenated with the search results
+				var orglist = [];
+				orglist = this.organisations.splice(0,1);
 				this.organisations = [];
 				this.$.authApi.getOrganisations(this.page, this.pagesize, this._searchText)
-				.then((request) => {
-					this.set('organisations', this.organisations.concat(request.response.results));
-					if (request.response.count === 0) {
-							this.dispatch('receiveNoOrganisation');
-						}
-			})
+					.then((request) => {
+						this.set('organisations', orglist.concat(request.response.results));
+						if (request.response.count === 0) {
+								this.dispatch('receiveNoOrganisation');
+							}
+				})
 			}
 
 			_resetSearch() {
@@ -349,6 +352,11 @@
 			}
 
 			_onDropdownItemSelect(event) {
+				var selectedOrg = event.model.index;
+				this._defaultOrganisationCode = event.model.organisation.code;
+
+				//this takes the selected item and moves it to the first item in the organisations array
+				this.organisations.unshift(this.organisations.splice(selectedOrg, 1)[0]);
 				this._dispatchSelectedOrganisation(event.model.organisation.id);
 				this.dispatchEvent(new CustomEvent('change-page', {
 					bubbles: true, composed: true, detail: { url: '/' }
