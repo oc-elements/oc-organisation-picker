@@ -59,6 +59,7 @@
 
 			paper-dropdown-menu.custom {
 				width: calc(100%);
+
 				display: grid !important;
 				--iron-input: {
 					width:100%;
@@ -69,6 +70,7 @@
 					display: grid !important;
 
 				};
+
 			}
 
 			paper-icon-item {
@@ -116,6 +118,7 @@
 			}
 
 			.search-input {
+
 				box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(0, 0, 0, 0.14), 0 0 0 0 rgba(0, 0, 0, 0.12);
 				border: none;
 				width: 100%;
@@ -137,10 +140,11 @@
 		<iron-localstorage use-raw name="last-active-organisation-code" value="{{_defaultOrganisationCode}}"></iron-localstorage>
 		<oc-organisation-api id="organisationApi"></oc-organisation-api>
 		<div class="picker-container app-menu-item">
+
 			<paper-dropdown-menu id="dropdown" no-label-float disabled$="[[ !organisations ]]" invalid$="[[ errorMessage ]]" error-message="[[ errorMessage ]]"
 			 on-tap="onPickerClick" class="custom">
 
-				<paper-listbox id="list" slot="dropdown-content">
+				<paper-listbox id="list" slot="dropdown-content" style="height: 250px">
 					<paper-item id="search" style="width:calc(90vw)">
 						<iron-icon style="margin: 6px 0px 0 -4px;
 						background: orange;
@@ -223,7 +227,10 @@
 
 					_searchText: {
 						type: String,
+						observer: '_propogateSearch',
+						notify: true
 					},
+
 					page: {
 						type: Number,
 						value: 1
@@ -309,6 +316,15 @@
 					});
 			}
 
+			_propogateSearch(_searchText) {
+				if(this._searchText.length === 3){
+					this._onSearch();
+					setTimeout(() => {
+					this.$.dropdown.$.menuButton.$.dropdown.open();
+				}, 1000);
+				}
+			}
+
 			_onSearch() {
 				//the organisation list is cleared with only the first item/default organisation being concatenated with the search results
 				var orglist = [];
@@ -321,6 +337,8 @@
 								this.dispatch('receiveNoOrganisation');
 							}
 				})
+				this.dropDownState = true;
+				return;
 			}
 
 			_resetSearch() {
