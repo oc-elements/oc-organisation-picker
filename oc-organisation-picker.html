@@ -125,6 +125,7 @@
 				height: 40px;
 				line-height: 48px;
 				margin-bottom: 5px;
+
 			}
 
 			.block-yo {
@@ -141,7 +142,7 @@
 		<oc-organisation-api id="organisationApi"></oc-organisation-api>
 		<div class="picker-container app-menu-item">
 
-			<paper-dropdown-menu id="dropdown" no-label-float disabled$="[[ !organisations ]]" invalid$="[[ errorMessage ]]" error-message="[[ errorMessage ]]"
+			<paper-dropdown-menu id="dropdown" opened$="[[dropDownState]]" no-label-float disabled$="[[ !organisations ]]" invalid$="[[ errorMessage ]]" error-message="[[ errorMessage ]]"
 			 on-tap="onPickerClick" class="custom">
 
 				<paper-listbox id="list" slot="dropdown-content" style="height: 250px">
@@ -159,7 +160,7 @@
 						top: -1px;" icon="icons:search" on-tap="_onSearch"></iron-icon>
 						<iron-input bind-value="{{_searchText}}" class="row">
 
-							<input class="search-input" on-tap="_stopEventPropagation" on-keydown="_stopEventPropagation" on-keyup="_stopEventPropagation"
+							<input id="searchtext" class="search-input" on-tap="_stopEventPropagation" on-keydown="_stopEventPropagation" on-keyup="_stopEventPropagation"
 							 placeholder="Search..." type="text">
 						</iron-input>
 					</paper-item>
@@ -188,6 +189,12 @@
 					_defaultOrganisationId: {
 						type: Number,
 						observer: '_dispatchSelectedOrganisation'
+					},
+
+					dropDownState: {
+						type: Boolean,
+						value: false,
+						notify: true
 					},
 
 					// Set a default organisation code
@@ -223,12 +230,6 @@
 					},
 					deviceToken: {
 						type: String
-					},
-
-					_searchText: {
-						type: String,
-						observer: '_propogateSearch',
-						notify: true
 					},
 
 					page: {
@@ -268,7 +269,7 @@
 			_stopEventPropagation(e) {
 				//check for enter
 				 if (e.keyCode === 13) {
-                    this._onSearch();
+                    this._propogateSearch();
                 }
 				else if (e.keyCode !== 40 && e.keyCode !== 38) {
 					e.stopPropagation();
@@ -317,11 +318,18 @@
 			}
 
 			_propogateSearch(_searchText) {
-				if(this._searchText.length === 3){
+				if(this._searchText.length >= 1){
 					this._onSearch();
 					setTimeout(() => {
 					this.$.dropdown.$.menuButton.$.dropdown.open();
-				}, 1000);
+
+				}, 400);
+				setTimeout(() => {
+					this.$.search.focused = true;
+					this.$.searchtext.focus();
+				}, 500);
+
+
 				}
 			}
 
